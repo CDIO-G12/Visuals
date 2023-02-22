@@ -3,11 +3,19 @@ from matplotlib import pyplot as plt
 import numpy as np
 import argparse
 
+
+
 cap = cv.VideoCapture(0, cv.CAP_DSHOW)
 #cap = cv.VideoCapture(2)
 if not cap.isOpened():
 	print("Cannot open camera")
 	exit()
+
+cap.set(cv.CAP_PROP_FRAME_WIDTH, 1280)
+cap.set(cv.CAP_PROP_FRAME_HEIGHT, 720)
+cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
+#cap.set(cv.CAP_PROP_FPS, 20)
+
 while True:
 	# Capture frame-by-frame
 	ret, frame = cap.read()
