@@ -8,6 +8,7 @@ cap = cv.VideoCapture(0, cv.CAP_DSHOW)
 # cap = cv.VideoCapture(2)
 if not cap.isOpened():
     print("Cannot open camera")
+    cap.release()
     exit()
 
 cap.set(cv.CAP_PROP_FRAME_WIDTH, 640)
@@ -86,19 +87,22 @@ while True:
     else:
         cv.imshow("output", gray)
 
-    #if np.array_equal(circles, circles_backup):
-     #   print("send new coordinates")
-      #  circles_backup = circles
+    if not np.array_equal(circles, circles_backup):
+        print("send new coordinates")
+        circles_backup = circles
 
     lower = np.array([0, 0, 100], dtype="uint8")
     upper = np.array([110, 70, 255], dtype="uint8")
     mask = cv.inRange(frame, lower, upper)
     frame2 = cv.bitwise_and(frame, frame, mask=mask)
-    gray = cv.cvtColor(frame2, cv.COLOR_BGR2GRAY)
+    hsv = cv.cvtColor(frame2, cv.COLOR_BGR2GRAY)
 
     # cross_lower = np.array([0, 0, 100], dtype="uint8")
     # cross_upper = np.array([70, 60, 255], dtype="uint8")
-
+    lower2 = np.array([-10, 255, 255], dtype="uint8")
+    upper2 = np.array([10, 255, 255], dtype="uint8")
+    maskRed = cv.inRange(frame, lower2, upper2)
+    frame2 = cv.bitwise_and(frame, frame, mask=maskRed)
     # cv.imshow("output", np.hstack(frame2))
 
     # cv.imshow("output", np.hstack([frame2]))
