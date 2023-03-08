@@ -1,6 +1,7 @@
 import cv2 as cv
 from matplotlib import pyplot as plt
 import numpy as np
+from time import sleep
 import argparse
 
 cap = cv.VideoCapture(0, cv.CAP_DSHOW)
@@ -26,6 +27,7 @@ corner_LL_arr = []
 corner_LR_arr = []
 corner_UL_arr = []
 corner_UR_arr = []
+circles_backup = []
 
 counter = 0
 
@@ -63,8 +65,11 @@ while True:
     output = frame.copy()
     # frame = cv.medianBlur(frame,10)
 
+
     circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 20, param1=75, param2=20, minRadius=2, maxRadius=10)
+    sleep(0.5)
     # ensure at least some circles were found
+
     if circles is not None:
         # convert the (x, y) coordinates and radius of the circles to integers
         circles = np.round(circles[0, :]).astype("int")
@@ -80,6 +85,10 @@ while True:
     # cv.imshow("output", np.hstack([frame, output]))
     else:
         cv.imshow("output", gray)
+
+    #if np.array_equal(circles, circles_backup):
+     #   print("send new coordinates")
+      #  circles_backup = circles
 
     lower = np.array([0, 0, 100], dtype="uint8")
     upper = np.array([110, 70, 255], dtype="uint8")
