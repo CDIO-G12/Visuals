@@ -8,6 +8,7 @@ import math
 import borders
 
 
+
 HOST = "localhost"  # The server's hostname or IP address
 #HOST = "192.168.0.102"  # The server's hostname or IP address
 PORT = 8888  # The port used by the server
