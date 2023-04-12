@@ -11,8 +11,8 @@ import borders
 
 
 
-HOST = "localhost"  # The server's hostname or IP address
-#HOST = "192.168.0.102"  # The server's hostname or IP address
+#HOST = "localhost"  # The server's hostname or IP address
+HOST = "192.168.0.102"  # The server's hostname or IP address
 PORT = 8888  # The port used by the server
 
 wall_defined = True
@@ -130,8 +130,9 @@ while True:
 
             corner_array = borderInstance.find_barriers(frame)
 
-            for x in corner_array:
-                cv.circle(output, x, 5, (255, 0, 0), -1)
+            if corner_array is not None:
+                for x in corner_array:
+                    cv.circle(output, x, 5, (255, 0, 0), -1)
 
 
             counter = 1

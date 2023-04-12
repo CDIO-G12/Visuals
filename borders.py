@@ -4,7 +4,7 @@ import cv2 as cv
 
 class borders:
     def __init__(self):
-        self.corners = []
+        self.corners = [(0,0), (0,0), (0,0), (0,0)]
 
     def find_barriers(self, frame):
 
@@ -71,27 +71,55 @@ class borders:
                         if (170 >= intersect[0] >= 130 and 570 >= intersect[1] >= 540):
                             corner_LL_arr.append((int(intersect[0]) + 20, int(intersect[1]) - 20))
 
-        if corner_UL_arr is not None:
-            meanUL = np.mean(corner_UL_arr, axis=(0))
-            avg = (int(meanUL[0]), int(meanUL[1]))
+        if len(corner_UL_arr) == 0:
+            return None
+        else:
+            if len(corner_UL_arr) == 1:
+                print("UL", corner_UL_arr)
+                avg = (int(corner_UL_arr[0][0]), int(corner_UL_arr[0][1]))
+            else:
+                meanUL = np.mean(corner_UL_arr, axis=(0))
+                avg = (int(meanUL[0]), int(meanUL[1]))
+
             self.corners[0] = avg
 
-        if corner_UR_arr is not None:
-            meanUR = np.mean(corner_UR_arr, axis=(0))
-            avg = (int(meanUR[0]), int(meanUR[1]))
+        if len(corner_UR_arr) == 0:
+            return None
+        else:
+            if len(corner_UR_arr) == 1:
+                print("UR", corner_UR_arr)
+                avg = (int(corner_UR_arr[0][0]), int(corner_UR_arr[0][1]))
+            else:
+                meanUR = np.mean(corner_UR_arr, axis=(0))
+                avg = (int(meanUR[0]), int(meanUR[1]))
+
             self.corners[1] = avg
 
-        if corner_LL_arr is not None:
-            meanLL = np.mean(corner_LL_arr, axis=(0))
-            avg = (int(meanLL[0]), int(meanLL[1]))
+        if len(corner_LL_arr) == 0:
+            return None
+        else:
+            if len(corner_LL_arr) == 1:
+                print("LL", corner_LL_arr)
+                avg = (int(corner_LL_arr[0][0]), int(corner_LL_arr[0][1]))
+            else:
+                meanLL = np.mean(corner_LL_arr, axis=(0))
+                avg = (int(meanLL[0]), int(meanLL[1]))
+
             self.corners[2] = avg
 
-        if corner_LR_arr is not None:
-            meanLR = np.mean(corner_LR_arr, axis=(0))
-            print(len(meanLR))
-            avg = (int(meanLR[0]), int(meanLR[1]))
+        if len(corner_LR_arr) == 0:
+            return None
+        else:
+            if len(corner_LR_arr) == 1:
+                print("LR", corner_LR_arr)
+                avg = (int(corner_LR_arr[0][0]), int(corner_LR_arr[0][1]))
+            else:
+                meanLR = np.mean(corner_LR_arr, axis=(0))
+                avg = (int(meanLR[0]), int(meanLR[1]))
+
             self.corners[3] = avg
 
+        """
         holeL = (meanLL[1]) / 2
         goal_arr.append((int(meanUL[0]), int(holeL)))
         goal_arr.append((int(meanUL[0]), int(holeL) + 30))
@@ -100,6 +128,7 @@ class borders:
         goal_arr.append((int(meanUR[0]), int(holeR)))
         goal_arr.append((int(meanUR[0]), int(holeR) + 50))
         # print("HoleR: ", int(holeR), int(meanUR[0]))
+        """
 
         return self.corners
 
