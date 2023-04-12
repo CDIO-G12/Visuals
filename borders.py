@@ -3,7 +3,6 @@ import cv2 as cv
 
 
 class borders:
-
     def __init__(self):
         self.corners = []
 
