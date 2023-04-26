@@ -6,22 +6,27 @@ class borders:
     def __init__(self):
         self.corners = [] * 4
 
-    def find_barriers(self, frame):
+    def find_barriers(self, frame, hsv):
         self.corners = [None] * 4
-        goal_arr = []
-        corner_arr = []
         corner_LL_arr = []
         corner_LR_arr = []
         corner_UL_arr = []
         corner_UR_arr = []
 
-        lower = np.array([0, 0, 100], dtype="uint8")
-        upper = np.array([110, 70, 255], dtype="uint8")
-        mask = cv.inRange(frame, lower, upper)
+
+        lower = np.array([0, 70, 50], dtype="uint8")
+        upper = np.array([10, 255, 255], dtype="uint8")
+        mask1 = cv.inRange(hsv, lower, upper)
+
+        lower = np.array([170, 70, 50], dtype="uint8")
+        upper = np.array([180, 255, 255], dtype="uint8")
+        mask2 = cv.inRange(hsv, lower, upper)
+        mask = mask1 | mask2
         frame2 = cv.bitwise_and(frame, frame, mask=mask)
         redEdges = cv.cvtColor(frame2, cv.COLOR_BGR2GRAY)
 
-        # cv.imshow("output", np.hstack([frame2]))
+        resized = cv.resize(redEdges, (512, 384))
+        cv.imshow("test", resized)
         # Use canny edge detection
         edges = cv.Canny(redEdges, 50, 150, apertureSize=3)
         # Apply HoughLinesP method to
@@ -48,28 +53,29 @@ class borders:
                 # Maintain a simples lookup list for points
                 lines_list.append([(x1, y1), (x2, y2)])
 
+        upper = 40
+        left = 170
+        right = 890
+        lower = 570
+        interval = 50
+
         for x in lines_list:
             for y in lines_list:
                 if y != x:
-                    # print("this is line1: ", x[0], x[1])
-                    # print("this is line2: ", y[0], y[1])
                     intersect = line_intersection(x, y)
-                    # print("intersects at: ", intersect)
-                    if (170 >= intersect[0] >= 130 or 890 >= intersect[0] >= 840) \
-                            and (40 >= intersect[1] >= 0 or 570 >= intersect[1] >= 540):
-                         #cv.circle(output, (int(intersect[0]), int(intersect[1])), 5, (255, 0, 0), -1)
-                         #corner_arr.append((int(intersect[0]), int(intersect[1])))
-                        if (890 >= intersect[0] >= 840 and 570 >= intersect[1] >= 540):
-                            corner_LR_arr.append((int(intersect[0]) - 20, int(intersect[1]) - 20))
+                    #print("intersection: ", intersect)
+                    if right >= intersect[0] >= (right - interval) and lower >= intersect[1] >= (lower - interval):
+                        corner_LR_arr.append((int(intersect[0]) - 20, int(intersect[1]) - 20))
 
-                        if (890 >= intersect[0] >= 840 and 40 >= intersect[1] >= 0):
-                            corner_UR_arr.append((int(intersect[0]) - 20, int(intersect[1]) + 10))
+                    if right >= intersect[0] >= (right - interval) and upper >= intersect[1] >= (upper - interval):
+                        corner_UR_arr.append((int(intersect[0]) - 20, int(intersect[1]) + 10))
 
-                        if (170 >= intersect[0] >= 130 and 40 >= intersect[1] >= 0):
-                            corner_UL_arr.append((int(intersect[0]) + 20, int(intersect[1]) + 10))
+                    if left >= intersect[0] >= (left - interval) and upper >= intersect[1] >= (upper - interval):
+                        corner_UL_arr.append((int(intersect[0]) + 20, int(intersect[1]) + 10))
 
-                        if (170 >= intersect[0] >= 130 and 570 >= intersect[1] >= 540):
-                            corner_LL_arr.append((int(intersect[0]) + 20, int(intersect[1]) - 20))
+                    if left >= intersect[0] >= (left - interval) and lower >= intersect[1] >= (lower - interval):
+                        corner_LL_arr.append((int(intersect[0]) + 20, int(intersect[1]) - 20))
+
 
         counter = 0
         #Denne kode er ugudeligt dårlig, og fuldstændigt fortabt. Skal cleanes up og gøres mere overskueligt.
@@ -78,7 +84,6 @@ class borders:
 
         #Tilføjede dette array for at undgå IndexError: list index out of range.
         avg_corners = [] * 4
-
 
         if corner_UL_arr is not None and len(corner_UL_arr) > 0:
             meanUL = np.mean(corner_UL_arr, axis=(0))
