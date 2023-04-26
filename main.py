@@ -10,7 +10,6 @@ import borders
 
 
 
-
 #HOST = "localhost"  # The server's hostname or IP address
 HOST = "192.168.0.102"  # The server's hostname or IP address
 PORT = 8888  # The port used by the server
@@ -41,22 +40,22 @@ def is_ball(hsv, sat):
     return hsv[1] < sat and hsv[2] > 150
 
 def orange_ball(hsv):
-    threshold_range = 20
+    threshold_range = 1#20
     # print(hsv, hsv_red)
-    return (hsv[0] > (30 - threshold_range) or hsv[0] < (30 + threshold_range)) and hsv[1] > 60 and hsv[2] > 150
+    return False
+    #return (hsv[0] > (30 - threshold_range) or hsv[0] < (30 + threshold_range)) and hsv[1] > 60 and hsv[2] > 150
 
 # pink
 def is_robot_left(hsv):
     threshold_range = 20
     #print(hsv, hsv_red)
-    return (hsv[0] > (160- threshold_range) or hsv[0] < (160+ threshold_range)) and hsv[1] > 100 and hsv[2] > 150
+    return (hsv[0] > (160 - threshold_range) or hsv[0] < (160+ threshold_range)) and hsv[1] > 100 and hsv[2] > 150
 
 # green
 def is_robot_right(hsv):
     threshold_range = 20
-    green = np.uint8([[[200,255,0 ]]])
-    hsv_green = cv.cvtColor(green,cv.COLOR_BGR2HSV)
-    return hsv[0] > (hsv_green[0][0][0] - threshold_range) and hsv[0] < (hsv_green[0][0][0] + threshold_range) and hsv[1] > 35 and hsv[2] > 127
+    green = 88
+    return hsv[0] > (green - threshold_range) and hsv[0] < (green + threshold_range) and hsv[1] > 70 and hsv[2] > 127
 
 def getAngleMidpointAndDist(robot_pos):
     myradians = math.atan2(robot_pos[0][1]-robot_pos[1][1], robot_pos[0][0]-robot_pos[1][0])
@@ -101,7 +100,8 @@ while True:
         borderInstance = borders.borders()
 
 
-        cap = cv.VideoCapture(1, cv.CAP_DSHOW)
+        #cap = cv.VideoCapture('videotest1.mp4')
+        cap = cv.VideoCapture(0, cv.CAP_DSHOW)
         #cap = cv.VideoCapture(0)
         if not cap.isOpened():
             print("Cannot open camera")
@@ -130,18 +130,24 @@ while True:
 
             corner_array = borderInstance.find_barriers(frame)
 
+            for x in corner_array:
+                cv.circle(output, x, 5, (255, 0, 0), -1)
+                cv.imshow("output", frame)
+
+            #for x in corner_array:
+                #cv.circle(output, x, 5, (255, 0, 0), -1)
+
+
+            counter = 0
             if corner_array is not None:
-                for x in corner_array:
-                    cv.circle(output, x, 5, (255, 0, 0), -1)
-
-
-            counter = 1
-            if corner_array is not None and not edges_sent:
                 edges_sent = True
-                for x in corner_array:
-                    send(s, "c/%d/%d/%d" % (counter, x[0], x[1]))
+                for corner in corner_array:
+                    if corner is None:
+                        continue
+                    send(s, "c/%d/%d/%d" % (counter, corner[0], corner[1]))
+                    print(corner)
                     counter += 1
-                    sleep(0.001)
+                    sleep(0.1)
 
 
 
@@ -177,7 +183,7 @@ while True:
                     ballFound = False
                     if not is_ball(hsv[y][x], saturation):
                         if orange_ball(hsv[y][x]):
-                            cv.rectangle(output, (x - 2, y - 2), (x + 2, y + 2), (0, 255, 0), -1)
+                            cv.rectangle(output, (x - 2, y - 2), (x + 2, y + 2), (255, 255, 0), -1)
                             ballFound = True
                             if not np.array_equal(oldOrange, (x,y)):
                                 send(s, "o/%d/%d" % (x, y))
@@ -255,12 +261,12 @@ while True:
 
 
             
-            cv.imshow("output", np.hstack([frame, output]))
+            cv.imshow("output", np.hstack([output]))
             #cv.imshow("gray", gray)
             
 
             # Display the resulting frame
-            # cv.imshow('frame', gray)
+            #cv.imshow('frame', gray)
             if cv.waitKey(1) == ord('q'):
                 break
 
