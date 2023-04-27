@@ -13,7 +13,6 @@ class borders:
         corner_UL_arr = []
         corner_UR_arr = []
 
-
         lower = np.array([0, 70, 50], dtype="uint8")
         upper = np.array([10, 255, 255], dtype="uint8")
         mask1 = cv.inRange(hsv, lower, upper)
@@ -53,7 +52,7 @@ class borders:
                 # Maintain a simples lookup list for points
                 lines_list.append([(x1, y1), (x2, y2)])
 
-        upper = 40
+        upper = 100
         left = 200
         right = 890
         lower = 570
@@ -101,34 +100,30 @@ class borders:
         else:
             avg = None
 
-        if corner_LL_arr is not None and len(corner_LL_arr) > 0:
-            meanLL = np.mean(corner_LL_arr, axis=(0))
-            avg = (int(meanLL[0]), int(meanLL[1]))
+        if corner_LR_arr is not None and len(corner_LR_arr) > 0:
+            meanLR = np.mean(corner_LR_arr, axis=(0))
+            avg = (int(meanLR[0]), int(meanLR[1]))
             self.corners[2] = avg
             #self.corners.append(avg)
         else:
             avg = None
 
-        if corner_LR_arr is not None and len(corner_LR_arr) > 0:
-            meanLR = np.mean(corner_LR_arr, axis=(0))
-            avg = (int(meanLR[0]), int(meanLR[1]))
+        if corner_LL_arr is not None and len(corner_LL_arr) > 0:
+            meanLL = np.mean(corner_LL_arr, axis=(0))
+            avg = (int(meanLL[0]), int(meanLL[1]))
             self.corners[3] = avg
             #self.corners.append(avg)
         else:
             avg = None
 
-        """
-        holeL = (meanLL[1]) / 2
-        goal_arr.append((int(meanUL[0]), int(holeL)))
-        goal_arr.append((int(meanUL[0]), int(holeL) + 30))
-        # print("HoleL: ", int(holeL), int(meanUL[0]))
-        holeR = (meanLR[1]) / 2
-        goal_arr.append((int(meanUR[0]), int(holeR)))
-        goal_arr.append((int(meanUR[0]), int(holeR) + 50))
-        # print("HoleR: ", int(holeR), int(meanUR[0]))
-        """
 
-        return self.corners
+        goal_arr = []
+        holeL = (int(meanUL[0]), int((meanLL[1]) / 2))
+        holeR = (int(meanUR[0]), int((meanLR[1]) / 2))
+
+        goal = holeL
+
+        return self.corners, goal
 
 
 
