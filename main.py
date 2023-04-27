@@ -51,7 +51,7 @@ while True:
         print("Got new connection!\n")
 
         if VIDEO:
-            cap = cv.VideoCapture('video/videotest1.mp4')
+            cap = cv.VideoCapture('video/videotest5.mp4')
         else:
             cap = cv.VideoCapture(0, cv.CAP_DSHOW)
 
@@ -79,7 +79,7 @@ while True:
             # if frame is read correctly ret is True
             if not ret:
                 if VIDEO:
-                    cap.set(cv.CAP_PROP_POS_FRAMES, 0) # this make the video loop
+                    cap.set(cv.CAP_PROP_POS_FRAMES, 0)  # this make the video loop
                     continue
                 print("Can't receive frame (stream end?). Exiting ...")
                 exit()

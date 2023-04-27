@@ -11,6 +11,7 @@ class locator:
     def __init__(self):
         self.balancer = 0
         self.best = None
+        self.circles = []
         self.export_best = [[0, 0], [0, 0]]
         self.indexes = []
 
@@ -18,14 +19,13 @@ class locator:
         distances = ([], [], [])
         circles = np.round(circles[0, :]).astype("int")
 
-        print("new")
         for (x, y, r) in circles:
             hsv_avg = int(hsv[y-1][x-1][0]/4 + hsv[y][x-1][0]/4 + hsv[y-1][x][0]/4 + hsv[y][x][0]/4)
-            p_dist = hsv_distance_from_hue(hsv_avg, PINK) + ((255-hsv[y][x][1])*2)
-            g_dist = hsv_distance_from_hue(hsv_avg, GREEN) + ((255-hsv[y][x][1])*2)
-            o_dist = hsv_distance_from_hue(hsv_avg, ORANGE) + ((255-hsv[y][x][1])*2)
+            p_dist = hsv_distance_from_hue(hsv_avg, PINK) #* ((255-hsv[y][x][1]))
+            g_dist = hsv_distance_from_hue(hsv_avg, GREEN) #* ((255-hsv[y][x][1]))
+            o_dist = hsv_distance_from_hue(hsv_avg, ORANGE) #* ((255-hsv[y][x][1]))
 
-            if hsv[y][x][1] < 20:
+            if hsv[y][x][1] < 40:
                 p_dist = 99999
                 g_dist = 99999
                 o_dist = 99999
@@ -35,7 +35,7 @@ class locator:
             if find_orange:
                 distances[2].append(o_dist)
 
-            print((x, y), (hsv_avg, hsv[y][x][1], hsv[y][x][2]), (p_dist, g_dist, o_dist))
+            #print((x, y), (hsv_avg, hsv[y][x][1], hsv[y][x][2]), (p_dist, g_dist, o_dist))
 
 
         best = []
@@ -47,25 +47,32 @@ class locator:
             best.append([x, y])
             indexes.append(index)
 
+        if find_orange:
+            if best[2] in best[0:1]:
+                #print("or", str(best))
+                find_orange = False
+
 
         if best == self.best:
             self.balancer += 1
         else:
             self.balancer = 0
 
-        if self.balancer > 2:
+        if self.balancer > 5:
             self.export_best = best
             self.indexes = indexes
+            self.circles = circles
         self.best = best
 
         new_circles = []
-        for i in range(len(circles)):
+        for i in range(len(self.circles)):
             if i not in self.indexes:
-                (x, y, r) = circles[i]
+                (x, y, r) = self.circles[i]
                 new_circles.append((x, y))
 
+
         orange = [0, 0]
-        if len(self.export_best) > 2:
+        if len(self.export_best) > 2 and find_orange:
             orange = self.export_best[2]
 
         return new_circles, [self.export_best[0], self.export_best[1]], orange

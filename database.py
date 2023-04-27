@@ -48,12 +48,14 @@ class Database:
 
     def highlight(self, frame):
         pos = self.robot_pos
+        cv.circle(frame, (self.robot[0][0], self.robot[0][1]), 4, (187, 255, 0), 2)
+        cv.circle(frame, (self.robot[1][0], self.robot[1][1]), 4, (170, 0, 255), 2)
         cv.rectangle(frame, (pos[0] - 2, pos[1] - 2), (pos[0] + 2, pos[1] + 2), (255, 255, 255), -1)
         cv.rectangle(frame, (pos[0] - 50, pos[1] - 50), (pos[0] + 50, pos[1] + 50), (255, 255, 255), 2)
         cv.rectangle(frame, (pos[0] - 50, pos[1] - 50), (pos[0] + 50, pos[1] + 50), (255, 255, 255), 2)
 
         if self.orange is not (0, 0):
-            cv.circle(frame, (self.orange[0], self.orange[1]), 3, (0, 0, 255), 2)
+            cv.circle(frame, (self.orange[0], self.orange[1]), 3, (0, 0, 0), 2)
 
         for ball in self.balls:
-            cv.circle(frame, (ball[0], ball[1]), 3, (255, 0, 255), 2)
+            cv.circle(frame, (ball[0], ball[1]), 3, (40, 140, 0), 2)
