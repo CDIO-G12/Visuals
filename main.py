@@ -26,6 +26,7 @@ WHITE = 180
 def send(s, package):
     #print(package)
     try:
+        package += "\n"
         s.sendall(package.encode())
     except:
         s.close()
@@ -36,11 +37,11 @@ def is_ball_old(frame):
     return frame[0] > WHITE and frame[1] > WHITE and frame[2] > WHITE
 
 def is_ball(hsv, sat):
-    #print(hsv)
-    return hsv[1] < sat and hsv[2] > 150
+    print(hsv)
+    return (hsv[0] < 30 or hsv[1] < 30) and hsv[1] < 75 and hsv[2] > 150
 
 def orange_ball(hsv):
-    threshold_range = 1#20
+    threshold_range = 20
     # print(hsv, hsv_red)
     return False
     #return (hsv[0] > (30 - threshold_range) or hsv[0] < (30 + threshold_range)) and hsv[1] > 60 and hsv[2] > 150
@@ -49,13 +50,13 @@ def orange_ball(hsv):
 def is_robot_left(hsv):
     threshold_range = 20
     #print(hsv, hsv_red)
-    return (hsv[0] > (160 - threshold_range) or hsv[0] < (160+ threshold_range)) and hsv[1] > 100 and hsv[2] > 150
+    return (hsv[0] > (160 - threshold_range) and hsv[0] < (160 + threshold_range)) and hsv[1] > 50 and hsv[2] > 150
 
 # green
 def is_robot_right(hsv):
     threshold_range = 20
-    green = 88
-    return hsv[0] > (green - threshold_range) and hsv[0] < (green + threshold_range) and hsv[1] > 70 and hsv[2] > 127
+    green = 82
+    return hsv[0] > (green - threshold_range) and hsv[0] < (green + threshold_range) and hsv[1] > 50 and hsv[2] > 127
 
 def getAngleMidpointAndDist(robot_pos):
     myradians = math.atan2(robot_pos[0][1]-robot_pos[1][1], robot_pos[0][0]-robot_pos[1][0])
@@ -80,13 +81,15 @@ def is_close(old, new):
 # print line_intersection((A, B), (C, D))
 robot = [0,0,0]
 pixelDist = 0
-ballsToFind = 4
+ballsToFind = 2
 countBalls = 0
 saturation = 5
 edges_sent = False
 ballFound = True
 lastHsvNumber = 0
 oldOrange = (0, 0)
+border_i = 0
+dump_frame = 1
 
 while True:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -101,7 +104,7 @@ while True:
 
 
         #cap = cv.VideoCapture('videotest1.mp4')
-        cap = cv.VideoCapture(0, cv.CAP_DSHOW)
+        cap = cv.VideoCapture(1, cv.CAP_DSHOW)
         #cap = cv.VideoCapture(0)
         if not cap.isOpened():
             print("Cannot open camera")
@@ -121,6 +124,11 @@ while True:
             if not ret:
                 print("Can't receive frame (stream end?). Exiting ...")
                 exit()
+
+            if dump_frame != 2:
+                dump_frame += 1
+                #continue
+            dump_frame = 0
             # Our operations on the frame come here
             gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
             hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
@@ -128,33 +136,30 @@ while True:
             output = frame.copy()
             # frame = cv.medianBlur(frame,10)
 
-            corner_array = borderInstance.find_barriers(frame)
+            if border_i <= 0:
+                border_i = 10
+                corner_array = borderInstance.find_barriers(frame, hsv)
 
-            for x in corner_array:
-                cv.circle(output, x, 5, (255, 0, 0), -1)
-                cv.imshow("output", frame)
+                for x in corner_array:
+                    cv.circle(output, x, 5, (255, 0, 0), -1)
+                    cv.imshow("output", frame)
 
-            #for x in corner_array:
-                #cv.circle(output, x, 5, (255, 0, 0), -1)
-
-
-            counter = 0
-            if corner_array is not None:
-                edges_sent = True
-                for corner in corner_array:
-                    if corner is None:
-                        continue
-                    send(s, "c/%d/%d/%d" % (counter, corner[0], corner[1]))
-                    print(corner)
-                    counter += 1
-                    sleep(0.1)
-
-
-
+                counter = 0
+                if corner_array:
+                    edges_sent = True
+                    #print("Corners: ")
+                    for corner in corner_array:
+                        if corner is None:
+                            continue
+                        send(s, "c/%d/%d/%d" % (counter, corner[0], corner[1]))
+                        #print(corner)
+                        counter += 1
+            border_i -= 1
 
             temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 5, param1=75, param2=20, minRadius=2, maxRadius=10)
-            sleep(0.10)
             # ensure at least some circles were found
+
+            sleep(0.01)
 
             found_robot = [False, False]
             robot_l_r = [[0, 0], [0, 0]]
@@ -163,7 +168,7 @@ while True:
 
 
 
-            if temp_circles is not None:
+            if temp_circles is not None and len(temp_circles) > 0:
 
                 if countBalls != len(temp_circles):  # if we have lost a ball
                     diff = countBalls - len(temp_circles)
@@ -202,10 +207,7 @@ while True:
                         else:
                             print("Circle not known: ", hsv[y][x])
 
-
                         lastHsvNumber = hsv[y][x][2]
-
-
                         continue
                     
                     countBalls += 1
@@ -229,16 +231,16 @@ while True:
                         robot[0] = pos[0] #x
                         robot[1] = pos[1] #y
                         robot[2] = pos[2] #r
-                        sleep(0.001)
                     if pixelDist != pos[3]:
                         pixelDist = pos[3]
+                        success = send(s, ("p/d/%f" % pixelDist))
+                        if not success:
+                            break
                         #s.sendall((b"p/d/%f" % pixelDist))
-                        sleep(0.001)
             # show the output image
             # cv.imshow("output", np.hstack([frame, output]))
             else:
                 cv.imshow("output", gray)
-
 
             if circles is None:
                 continue
@@ -253,14 +255,12 @@ while True:
                     if not success:
                         break
                     #s.sendall((b"b/%d/%d" % (circle[0], circle[1])))
-                    sleep(0.1)
                 success = send(s, "b/d/d")
                 if not success:
                     break
                 #print("send new coordinates" + str(circles))
 
-
-            
+            #resized = cv.resize(np.hstack([output]), (512, 384))
             cv.imshow("output", np.hstack([output]))
             #cv.imshow("gray", gray)
             

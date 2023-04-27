@@ -57,7 +57,7 @@ class borders:
         left = 200
         right = 890
         lower = 570
-        interval = 50
+        interval = 100
 
         for x in lines_list:
             for y in lines_list:
@@ -67,13 +67,13 @@ class borders:
                     if right >= intersect[0] >= (right - interval) and lower >= intersect[1] >= (lower - interval):
                         corner_LR_arr.append((int(intersect[0]) - 20, int(intersect[1]) - 20))
 
-                    if right >= intersect[0] >= (right - interval) and upper >= intersect[1] >= (upper - interval):
+                    if right >= intersect[0] >= (right - interval) and upper >= intersect[1] >= 0:
                         corner_UR_arr.append((int(intersect[0]) - 20, int(intersect[1]) + 20))
 
-                    if left >= intersect[0] >= (left - interval) and upper >= intersect[1] >= (upper - interval):
+                    if left >= intersect[0] >= 0 and upper >= intersect[1] >= 0:
                         corner_UL_arr.append((int(intersect[0]) + 20, int(intersect[1]) + 20))
 
-                    if left >= intersect[0] >= (left - interval) and lower >= intersect[1] >= (lower - interval):
+                    if left >= intersect[0] >= 0 and lower >= intersect[1] >= (lower - interval):
                         corner_LL_arr.append((int(intersect[0]) + 20, int(intersect[1]) - 20))
 
 
