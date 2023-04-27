@@ -2,7 +2,7 @@ import numpy as np
 import cv2 as cv
 
 
-class borders:
+class Borders:
     def __init__(self):
         self.corners = [] * 4
 
@@ -84,6 +84,11 @@ class borders:
         #Tilføjede dette array for at undgå IndexError: list index out of range.
         avg_corners = [] * 4
 
+        meanUL = None
+        meanUR = None
+        meanLL = None
+        meanLR = None
+
         if corner_UL_arr is not None and len(corner_UL_arr) > 0:
             meanUL = np.mean(corner_UL_arr, axis=(0))
             avg = (int(meanUL[0]), int(meanUL[1]))
@@ -116,12 +121,12 @@ class borders:
         else:
             avg = None
 
-
-        goal_arr = []
-        holeL = (int(meanUL[0]), int((meanLL[1]) / 2))
-        holeR = (int(meanUR[0]), int((meanLR[1]) / 2))
-
-        goal = holeL
+        goal = (0, 0)
+        if meanUL is not None and meanUR is not None and meanLL is not None and meanLR is not None:
+            goal_arr = []
+            holeL = (int(meanUL[0]), int((meanLL[1]) / 2))
+            holeR = (int(meanUR[0]), int((meanLR[1]) / 2))
+            goal = holeL
 
         return self.corners, goal
 
