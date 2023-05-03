@@ -70,7 +70,7 @@ class Locator:
         if best_ball[1] in new_circles:
             new_circles.remove(best_ball[1])
 
-        if robot != self.last_robot:
+        if self.balls_close_enough(new_circles):
             temp = robot
             robot = self.last_robot
             self.last_robot = temp
