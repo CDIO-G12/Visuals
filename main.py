@@ -3,14 +3,13 @@ from matplotlib import pyplot as plt
 import numpy as np
 from time import sleep
 import socket
-import borders_2 as borders
+import borders as borders
 import database as db
 import locator as l
 import utils as u
 
-
-
-VIDEO = False # Set to true if camera not connected
+VIDEO = True # Set to true if camera not connected
+VIDEOFILE = 'video/combined.mp4'
 HOST = "localhost"  # The server's hostname or IP address
 #HOST = "192.168.0.102"  # The server's hostname or IP address
 PORT = 8888  # The port used by the server
@@ -53,7 +52,7 @@ while True:
         print("Got new connection!\n")
 
         if VIDEO:
-            cap = cv.VideoCapture('video/combined.mp4')
+            cap = cv.VideoCapture(VIDEOFILE)
         else:
             cap = cv.VideoCapture(0, cv.CAP_DSHOW)
 
@@ -85,7 +84,7 @@ while True:
                 print("Can't receive frame (stream end?). Exiting ...")
                 exit()
 
-            if dump_frame >= 5:
+            if dump_frame >= 5 and False:
                 dump_frame = 0
                 continue
             dump_frame += 1
@@ -145,9 +144,9 @@ while True:
             found_robot = [False, False]
             robot_l_r = [[0, 0], [0, 0]]
 
-            circles = []
             orange = None
             robot = None
+            circles = None
 
             if temp_circles is not None and len(temp_circles) > 0:
                 circles, robot, orange = locator.locate(hsv, temp_circles)
@@ -228,12 +227,13 @@ while True:
 
             if circles is None:
                 continue
+
             success = database.check_and_send(s, circles, robot, orange)
             if not success:
                 break
             database.highlight(output)
 
-            data = u.check_data(s)
+            data = u.check_data(s)  # read from middleman
             if data is not None:
                 drawPoints = []
                 spl = data.decode().split("\n")
@@ -247,6 +247,7 @@ while True:
                         if len(innerSplit) < 5:
                             continue
                         innerSplit = [int(i) for i in innerSplit]
+                        # x/y/r/g/b
                         drawPoints.append((innerSplit[0], innerSplit[1], (innerSplit[2], innerSplit[3], innerSplit[4])))
                     except ValueError:
                         pass
