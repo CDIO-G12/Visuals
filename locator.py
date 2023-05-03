@@ -54,10 +54,10 @@ class Locator:
         best_val = [9999, 9999, 9999]
         best_ball = [(0, 0), (0, 0), None]
         for dist in distances:
-            type = dist[0]
-            if dist[1] < best_val[type]:
-                best_val[type] = dist[1]
-                best_ball[type] = dist[2]
+            ball_type = dist[0]
+            if dist[1] < best_val[ball_type]:
+                best_val[ball_type] = dist[1]
+                best_ball[ball_type] = dist[2]
 
         orange = None
         if find_orange and best_ball[2] is not None:
@@ -74,10 +74,8 @@ class Locator:
             temp = robot
             robot = self.last_robot
             self.last_robot = temp
-        else:
-            self.last_robot = robot
 
-        if new_circles == self.best:
+        if self.best == new_circles:
             self.balancer += 1
         else:
             self.balancer = 0
@@ -94,7 +92,21 @@ class Locator:
         return self.export, robot, orange
 
 
+    def balls_close_enough(self, new_circles):
+        if self.best is None:
+            return True
 
+        for (x1, y1) in new_circles:
+            match = False
+            for (x2, y2) in self.best:
+                dist = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+                if 5 >= dist >= -5:
+                    match = True
+                    break
+            if not match:
+                return False
+
+        return True
 
 def hsv_distance_from_hue(hsv_hue, hue):
     dist = min(abs(hsv_hue - hue), abs(hsv_hue - (hue - 180)))
