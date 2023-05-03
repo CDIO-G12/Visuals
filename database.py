@@ -8,7 +8,7 @@ class Database:
     def __init__(self):
         self.balls = []
         self.robot = []
-        self.robot_pos = []
+        self.robot_pos = None
         self.pixel_dist = 0
         self.orange = None
 
@@ -26,7 +26,7 @@ class Database:
             if not success:
                 return False
 
-        if self.robot is not robot:
+        if self.robot is not robot and robot is not None:
             self.robot = robot
             self.robot_pos = l.getAngleMidpointAndDist(robot)
             success = u.send(s, ("r/%d/%d/%d" % (self.robot_pos[0], self.robot_pos[1], self.robot_pos[2])))
@@ -48,6 +48,9 @@ class Database:
         return True
 
     def highlight(self, frame):
+        if self.robot_pos is None:
+            return
+
         pos = self.robot_pos
         cv.circle(frame, (self.robot[0][0], self.robot[0][1]), 4, (187, 255, 0), 2)
         cv.circle(frame, (self.robot[1][0], self.robot[1][1]), 4, (170, 0, 255), 2)

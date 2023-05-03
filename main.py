@@ -10,7 +10,7 @@ import utils as u
 
 
 
-VIDEO = True # Set to true if camera not connected
+VIDEO = False # Set to true if camera not connected
 HOST = "localhost"  # The server's hostname or IP address
 #HOST = "192.168.0.102"  # The server's hostname or IP address
 PORT = 8888  # The port used by the server
@@ -73,7 +73,6 @@ while True:
         locator = l.Locator()
 
         circles_backup = []
-        robot = [0, 0, 0]
 
         while True:
             # Capture frame-by-frame
@@ -147,6 +146,8 @@ while True:
             robot_l_r = [[0, 0], [0, 0]]
 
             circles = []
+            orange = None
+            robot = None
 
             if temp_circles is not None and len(temp_circles) > 0:
                 circles, robot, orange = locator.locate(hsv, temp_circles)

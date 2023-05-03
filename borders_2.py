@@ -18,9 +18,10 @@ class Borders:
         mask2 = cv.inRange(hsv, lower, upper)
         mask = mask1 | mask2
         frame2 = cv.bitwise_and(frame, frame, mask=mask)
-        red_edges = cv.cvtColor(frame2, cv.COLOR_BGR2GRAY)
+        #red_edges = cv.cvtColor(frame2, cv.COLOR_BGR2GRAY)
+        red_edges = frame2
 
-        resized = red_edges
+        resized = frame2
         #resized = cv.resize(resized, (512, 384))
         cv.imshow("test", resized)
 
@@ -29,16 +30,16 @@ class Borders:
         current_pos = [int(len(frame)/3), int(len(frame[0])/2)]
 
         found = False
-        while is_not_red(red_edges, current_pos) and is_not_red(red_edges, (current_pos[1], current_pos[0+3])):
+        while is_not_red(red_edges, current_pos) or is_not_red(red_edges, (current_pos[0]-3, current_pos[1])):
             current_pos[0] -= 2
         cv.circle(resized, (current_pos[1], current_pos[0]), 5, (255, 0, 0), -1)
         current_pos[0] += 30
 
-        while is_not_red(red_edges, current_pos) and is_not_red(red_edges, (current_pos[1-3], current_pos[0])):
+        while is_not_red(red_edges, current_pos) or is_not_red(red_edges, (current_pos[0], current_pos[1]-2)):
             current_pos[1] += 2
-        print(red_edges[current_pos[1]][current_pos[0]])
+        #print(red_edges[current_pos[1]][current_pos[0]])
         current_pos[1] -= 10
-        while is_not_red(red_edges, current_pos) and is_not_red(red_edges, (current_pos[1], current_pos[0+3])):
+        while is_not_red(red_edges, current_pos) or is_not_red(red_edges, (current_pos[0]+3, current_pos[1])):
             current_pos[0] -= 2
         current_pos[1] += 10
         cv.circle(resized, (current_pos[1], current_pos[0]), 5, (255, 0, 0), -1)
@@ -56,6 +57,7 @@ def is_not_red(frame, pos):
         return False
 
     try:
-        return frame[pos[1]][pos[0]] < 80
+        print(frame[pos[1]][pos[0]][2])
+        return frame[pos[1]][pos[0]][2] < 80
     except IndexError:
         return False
