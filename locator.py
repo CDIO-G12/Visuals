@@ -7,75 +7,91 @@ GREEN = 82
 ORANGE = 30
 
 
-class locator:
+class Locator:
     def __init__(self):
         self.balancer = 0
         self.best = None
         self.circles = []
-        self.export_best = [[0, 0], [0, 0]]
-        self.indexes = []
+        self.last_robot = [[0, 0], [0, 0]]
+        self.export = None
 
     def locate(self, hsv, circles, find_orange=True, ball_count=10):
-        distances = ([], [], [])
+        distances = ([])
         circles = np.round(circles[0, :]).astype("int")
+        new_circles = []
 
+        notBalls = []
+        i = -1
         for (x, y, r) in circles:
+            i += 1
             hsv_avg = int(hsv[y-1][x-1][0]/4 + hsv[y][x-1][0]/4 + hsv[y-1][x][0]/4 + hsv[y][x][0]/4)
-            p_dist = hsv_distance_from_hue(hsv_avg, PINK) #* ((255-hsv[y][x][1]))
-            g_dist = hsv_distance_from_hue(hsv_avg, GREEN) #* ((255-hsv[y][x][1]))
-            o_dist = hsv_distance_from_hue(hsv_avg, ORANGE) #* ((255-hsv[y][x][1]))
+
+            if hsv[y][x][2] < 150 or r < 6:
+                notBalls.append((x, y))
+                continue
+
+            new_circles.append((x, y))
 
             if hsv[y][x][1] < 40:
-                p_dist = 99999
-                g_dist = 99999
-                o_dist = 99999
+                continue
 
-            distances[0].append(p_dist)
-            distances[1].append(g_dist)
-            if find_orange:
-                distances[2].append(o_dist)
+            p_dist = hsv_distance_from_hue(hsv_avg, PINK) + ((255-hsv[y][x][1])/100)
+            g_dist = hsv_distance_from_hue(hsv_avg, GREEN) + ((255-hsv[y][x][1])/100)
+            if find_orange is True:
+                o_dist = hsv_distance_from_hue(hsv_avg, ORANGE) + ((255-hsv[y][x][1])/100)
+            else:
+                o_dist = 9999
 
-            #print((x, y), (hsv_avg, hsv[y][x][1], hsv[y][x][2]), (p_dist, g_dist, o_dist))
+            m = min(p_dist, g_dist, o_dist)
+            if m == p_dist:
+                distances.append((0, m, (x, y)))
+            elif m == g_dist:
+                distances.append((1, m, (x, y)))
+            else:
+                distances.append((2, m, (x, y)))
+            # print((x, y), (hsv_avg, hsv[y][x][1], hsv[y][x][2]), (p_dist, g_dist, o_dist))
 
+        best_val = [9999, 9999, 9999]
+        best_ball = [(0, 0), (0, 0), None]
+        for dist in distances:
+            type = dist[0]
+            if dist[1] < best_val[type]:
+                best_val[type] = dist[1]
+                best_ball[type] = dist[2]
 
-        best = []
-        indexes = []
-        for dist_list in distances:
-            smallest = min(dist_list)
-            index = dist_list.index(smallest)
-            (x, y, r) = circles[index]
-            best.append([x, y])
-            indexes.append(index)
+        orange = None
+        if find_orange and best_ball[2] is not None:
+            orange = best_ball[2]
+            new_circles.remove(best_ball[2])
 
-        if find_orange:
-            if best[2] in best[0:1]:
-                #print("or", str(best))
-                find_orange = False
+        robot = [best_ball[0], best_ball[1]]
+        if best_ball[0] in new_circles:
+            new_circles.remove(best_ball[0])
+        if best_ball[1] in new_circles:
+            new_circles.remove(best_ball[1])
 
+        if robot != self.last_robot:
+            temp = robot
+            robot = self.last_robot
+            self.last_robot = temp
+        else:
+            self.last_robot = robot
 
-        if best == self.best:
+        if new_circles == self.best:
             self.balancer += 1
         else:
             self.balancer = 0
 
-        if self.balancer > 5:
-            self.export_best = best
-            self.indexes = indexes
-            self.circles = circles
-        self.best = best
+        if self.balancer > 2:
+            self.circles = new_circles
+            self.export = new_circles
 
-        new_circles = []
-        for i in range(len(self.circles)):
-            if i not in self.indexes:
-                (x, y, r) = self.circles[i]
-                new_circles.append((x, y))
+        self.best = new_circles
 
+        if self.export is None:
+            self.export = new_circles
 
-        orange = [0, 0]
-        if len(self.export_best) > 2 and find_orange:
-            orange = self.export_best[2]
-
-        return new_circles, [self.export_best[0], self.export_best[1]], orange
+        return self.export, robot, orange
 
 
 

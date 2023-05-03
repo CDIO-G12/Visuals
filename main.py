@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from time import sleep
 import socket
-import borders
+import borders_2 as borders
 import database as db
 import locator as l
 import utils as u
@@ -41,6 +41,8 @@ border_i = 0
 dump_frame = 1
 oldGoal = None
 
+print("Waiting on MiddleMan")
+
 while True:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
@@ -51,7 +53,7 @@ while True:
         print("Got new connection!\n")
 
         if VIDEO:
-            cap = cv.VideoCapture('video/videotest5.mp4')
+            cap = cv.VideoCapture('video/combined.mp4')
         else:
             cap = cv.VideoCapture(0, cv.CAP_DSHOW)
 
@@ -68,7 +70,7 @@ while True:
 
         borderInstance = borders.Borders()
         database = db.Database()
-        locator = l.locator()
+        locator = l.Locator()
 
         circles_backup = []
         robot = [0, 0, 0]
@@ -90,26 +92,33 @@ while True:
             dump_frame += 1
 
             # Our operations on the frame come here
-            gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
             hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
+            gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
             gray = cv.medianBlur(gray, 5)
             output = frame.copy()
-            # frame = cv.medianBlur(frame,10)
 
-            lower = np.array([100, 60, 0], dtype="uint8")
-            upper = np.array([140, 180, 255], dtype="uint8")
+            lower = np.array([0, 0, 0], dtype="uint8")
+            upper = np.array([255, 255, 180], dtype="uint8")
             mask = cv.bitwise_not(cv.inRange(hsv, lower, upper))
             frame = cv.bitwise_and(frame, frame, mask=mask)
 
             cv.imshow("masked", frame)
 
+            """
+            gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+            gray = cv.medianBlur(gray, 5)
+            cv.imshow("masked", frame)
+            """
+
+
             if border_i <= 0:
                 border_i = 10
-                corner_array, goal = borderInstance.find_barriers(frame, hsv)
-                if goal is not oldGoal:
-                    oldGoal = goal
-                    u.send(s, "g/%d/%d" % (goal[0], goal[1]))
-                cv.rectangle(output, (goal[0] - 2, goal[1] - 2), (goal[0] + 2, goal[1] + 2), (255, 255, 255), -1)
+                corner_array, goal = borderInstance.find_barriers(output, hsv)
+                if goal is not None:
+                    if goal is not oldGoal:
+                        oldGoal = goal
+                        u.send(s, "g/%d/%d" % (goal[0], goal[1]))
+                    cv.rectangle(output, (goal[0] - 2, goal[1] - 2), (goal[0] + 2, goal[1] + 2), (255, 255, 255), -1)
 
 
             for x in corner_array:

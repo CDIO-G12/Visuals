@@ -10,7 +10,7 @@ class Database:
         self.robot = []
         self.robot_pos = []
         self.pixel_dist = 0
-        self.orange = (0, 0)
+        self.orange = None
 
     def check_and_send(self, s, balls, robot, orange):
         if not np.array_equal(self.balls, balls):
@@ -38,11 +38,12 @@ class Database:
                 if not success:
                     return False
 
-        if self.orange is not orange:
+        if self.orange != orange:
             self.orange = orange
-            success = u.send(s, "o/%d/%d" % (orange[0], orange[1]))
-            if not success:
-                return False
+            if orange is not None:
+                success = u.send(s, "o/%d/%d" % (orange[0], orange[1]))
+                if not success:
+                    return False
 
         return True
 
@@ -54,7 +55,7 @@ class Database:
         cv.rectangle(frame, (pos[0] - 50, pos[1] - 50), (pos[0] + 50, pos[1] + 50), (255, 255, 255), 2)
         cv.rectangle(frame, (pos[0] - 50, pos[1] - 50), (pos[0] + 50, pos[1] + 50), (255, 255, 255), 2)
 
-        if self.orange is not (0, 0):
+        if self.orange is not None:
             cv.circle(frame, (self.orange[0], self.orange[1]), 3, (0, 0, 0), 2)
 
         for ball in self.balls:
