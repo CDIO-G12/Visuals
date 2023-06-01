@@ -50,7 +50,6 @@ class Database:
     def highlight(self, frame):
         if self.robot_pos is None:
             return
-
         pos = self.robot_pos
         cv.circle(frame, (self.robot[0][0], self.robot[0][1]), 4, (187, 255, 0), 2)
         cv.circle(frame, (self.robot[1][0], self.robot[1][1]), 4, (170, 0, 255), 2)

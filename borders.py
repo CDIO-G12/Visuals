@@ -13,6 +13,7 @@ class Borders:
         corner_UL_arr = []
         corner_UR_arr = []
 
+
         lower = np.array([0, 70, 50], dtype="uint8")
         upper = np.array([10, 255, 255], dtype="uint8")
         mask1 = cv.inRange(hsv, lower, upper)
@@ -23,6 +24,7 @@ class Borders:
         mask = mask1 | mask2
         frame2 = cv.bitwise_and(frame, frame, mask=mask)
         redEdges = cv.cvtColor(frame2, cv.COLOR_BGR2GRAY)
+
 
         resized = cv.resize(redEdges, (512, 384))
         cv.imshow("test", resized)
@@ -58,28 +60,29 @@ class Borders:
         lower = 570
         interval = 100
 
+        cross_array = []
         for x in lines_list:
             for y in lines_list:
                 if y != x:
                     intersect = line_intersection(x, y)
 
                     if right >= intersect[0] >= (right - interval) and lower >= intersect[1] >= (lower - interval):
-                        corner_LR_arr.append((int(intersect[0]) - 20, int(intersect[1]) - 20))
+                        corner_LR_arr.append((int(intersect[0]), int(intersect[1])))
 
                     if right >= intersect[0] >= (right - interval) and upper >= intersect[1] >= 0:
-                        corner_UR_arr.append((int(intersect[0]) - 20, int(intersect[1]) + 20))
+                        corner_UR_arr.append((int(intersect[0]), int(intersect[1])))
 
                     if left >= intersect[0] >= 0 and upper >= intersect[1] >= 0:
-                        corner_UL_arr.append((int(intersect[0]) + 20, int(intersect[1]) + 20))
+                        corner_UL_arr.append((int(intersect[0]), int(intersect[1])))
 
                     if left >= intersect[0] >= 0 and lower >= intersect[1] >= (lower - interval):
-                        corner_LL_arr.append((int(intersect[0]) + 20, int(intersect[1]) - 20))
+                        corner_LL_arr.append((int(intersect[0]), int(intersect[1])))
+
+                    else:
+                        cross_array.append(intersect)
 
 
         counter = 0
-        #Denne kode er ugudeligt dårlig, og fuldstændigt fortabt. Skal cleanes up og gøres mere overskueligt.
-
-        #while self.corners.count(None) <= 4:
 
         #Tilføjede dette array for at undgå IndexError: list index out of range.
         avg_corners = [] * 4
@@ -91,7 +94,7 @@ class Borders:
 
         if corner_UL_arr is not None and len(corner_UL_arr) > 0:
             meanUL = np.mean(corner_UL_arr, axis=(0))
-            avg = (int(meanUL[0]), int(meanUL[1]))
+            avg = (int(meanUL[0]) + 60, int(meanUL[1])+20)
             self.corners[0] = avg
             #self.corners[0] =avg
         else:
@@ -99,7 +102,7 @@ class Borders:
 
         if corner_UR_arr is not None and len(corner_UR_arr) > 0:
             meanUR = np.mean(corner_UR_arr, axis=(0))
-            avg = (int(meanUR[0]), int(meanUR[1]))
+            avg = (int(meanUR[0]) - 20, int(meanUR[1])+20)
             self.corners[1] = avg
             #self.corners.append(avg)
         else:
@@ -107,7 +110,7 @@ class Borders:
 
         if corner_LR_arr is not None and len(corner_LR_arr) > 0:
             meanLR = np.mean(corner_LR_arr, axis=(0))
-            avg = (int(meanLR[0]), int(meanLR[1]))
+            avg = (int(meanLR[0])-20, int(meanLR[1])-20)
             self.corners[2] = avg
             #self.corners.append(avg)
         else:
@@ -115,11 +118,13 @@ class Borders:
 
         if corner_LL_arr is not None and len(corner_LL_arr) > 0:
             meanLL = np.mean(corner_LL_arr, axis=(0))
-            avg = (int(meanLL[0]), int(meanLL[1]))
+            avg = (int(meanLL[0])+20, int(meanLL[1])-20)
             self.corners[3] = avg
             #self.corners.append(avg)
         else:
             avg = None
+
+
 
         goal = (0, 0)
         if meanUL is not None and meanUR is not None and meanLL is not None and meanLR is not None:

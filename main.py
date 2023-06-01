@@ -8,10 +8,10 @@ import database as db
 import locator as l
 import utils as u
 
-VIDEO = True # Set to true if camera not connected
+VIDEO = False # Set to true if camera not connected
 VIDEOFILE = 'video/combined.mp4'
-HOST = "localhost"  # The server's hostname or IP address
-#HOST = "192.168.0.102"  # The server's hostname or IP address
+#HOST = "localhost"  # The server's hostname or IP address
+HOST = "192.168.0.102"  # The server's hostname or IP address
 PORT = 8888  # The port used by the server
 
 wall_defined = True
@@ -54,7 +54,7 @@ while True:
         if VIDEO:
             cap = cv.VideoCapture(VIDEOFILE)
         else:
-            cap = cv.VideoCapture(0, cv.CAP_DSHOW)
+            cap = cv.VideoCapture(1, cv.CAP_DSHOW)
 
         if not cap.isOpened():
             print("Cannot open camera")
@@ -89,10 +89,13 @@ while True:
                 continue
             dump_frame += 1
 
+
             # Our operations on the frame come here
             hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
             gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
             gray = cv.medianBlur(gray, 5)
+
+
             output = frame.copy()
 
             lower = np.array([0, 0, 0], dtype="uint8")
@@ -100,7 +103,7 @@ while True:
             mask = cv.bitwise_not(cv.inRange(hsv, lower, upper))
             frame = cv.bitwise_and(frame, frame, mask=mask)
 
-            cv.imshow("masked", frame)
+            #cv.imshow("masked", frame)
 
             """
             gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
@@ -238,8 +241,19 @@ while True:
                 drawPoints = []
                 spl = data.decode().split("\n")
                 for parts in spl:
+
                     innerSplit = parts.split("/")
+
                     try:
+                        if innerSplit[0] == "check" and len(innerSplit) > 2:
+                            innerSplit = [int(i) for i in innerSplit[1:]]
+                            if u.check_for_ball(hsv[innerSplit[1]][innerSplit[2]]):
+                                u.send(s, "f/t/0")
+                            else:
+                                u.send(s, "f/f/0")
+
+                            continue
+
                         if innerSplit[0] == "gc" and len(innerSplit) > 3:
                             innerSplit = [int(i) for i in innerSplit[1:]]
                             guideCorners[innerSplit[0]] = (innerSplit[1], innerSplit[2])
@@ -279,3 +293,4 @@ while True:
     cap.release()
 
     cv.destroyAllWindows()
+

@@ -29,5 +29,11 @@ def check_data(s):
     return None
 
 
+def check_for_ball(hsv):
+    if (hsv[1] <= 40 and hsv[2] >= 65) or (50 >= hsv[0] >= 20 and hsv[1] >= 60 and hsv[2] >= 80):
+        return True
+    else:
+        return False
+
 def is_close(old, new, threshold=2):
     return new < old + threshold and new > old - threshold
