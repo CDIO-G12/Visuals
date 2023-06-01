@@ -2,8 +2,8 @@ import argparse
 import math
 import numpy as np
 
-PINK = 160
-GREEN = 82
+PINK = 180
+GREEN = 75
 ORANGE = 30
 
 
@@ -52,7 +52,9 @@ class Locator:
             # print((x, y), (hsv_avg, hsv[y][x][1], hsv[y][x][2]), (p_dist, g_dist, o_dist))
 
         best_val = [9999, 9999, 9999]
+
         best_ball = [(0, 0), (0, 0), None]
+
         for dist in distances:
             ball_type = dist[0]
             if dist[1] < best_val[ball_type]:
@@ -63,8 +65,10 @@ class Locator:
         if find_orange and best_ball[2] is not None:
             orange = best_ball[2]
             new_circles.remove(best_ball[2])
+        robot = None
+        if best_ball[0] != (0, 0) and best_ball[1] != (0, 0):
+            robot = [best_ball[0], best_ball[1]]
 
-        robot = [best_ball[0], best_ball[1]]
         if best_ball[0] in new_circles:
             new_circles.remove(best_ball[0])
         if best_ball[1] in new_circles:
@@ -75,7 +79,7 @@ class Locator:
             robot = self.last_robot
             self.last_robot = temp
 
-        if self.best == new_circles:
+        if self.balls_close_enough(new_circles):
             self.balancer += 1
         else:
             self.balancer = 0
