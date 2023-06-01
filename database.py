@@ -58,6 +58,7 @@ class Database:
         cv.rectangle(frame, (pos[0] - 50, pos[1] - 50), (pos[0] + 50, pos[1] + 50), (255, 255, 255), 2)
         cv.rectangle(frame, (pos[0] - 50, pos[1] - 50), (pos[0] + 50, pos[1] + 50), (255, 255, 255), 2)
 
+
         if self.orange is not None:
             cv.circle(frame, (self.orange[0], self.orange[1]), 3, (0, 0, 0), 2)
 
