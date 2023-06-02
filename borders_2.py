@@ -29,24 +29,27 @@ class Borders:
         # [y, x]
         current_pos = [int(len(frame)/3), int(len(frame[0])/2)]
 
-        found = False
         while is_not_red(red_edges, current_pos) or is_not_red(red_edges, (current_pos[0]-3, current_pos[1])):
             current_pos[0] -= 2
         cv.circle(resized, (current_pos[1], current_pos[0]), 5, (255, 0, 0), -1)
         current_pos[0] += 30
 
-        while is_not_red(red_edges, current_pos) or is_not_red(red_edges, (current_pos[0], current_pos[1]-2)):
+        while is_not_red(red_edges, current_pos) or is_not_red(red_edges, (current_pos[0], current_pos[1]+3)):
             current_pos[1] += 2
-        #print(red_edges[current_pos[1]][current_pos[0]])
+            #cv.circle(resized, (current_pos[1], current_pos[0]), 5, (255, 0, 0), -1)
+        current_pos[0] -= 30
+        cv.circle(resized, (current_pos[1], current_pos[0]), 5, (255, 0, 0), -1)
+        print("pos: y,x: ", current_pos, "corner: bgr: ", red_edges[current_pos[1]][current_pos[0]])
         current_pos[1] -= 10
+
+        """
         while is_not_red(red_edges, current_pos) or is_not_red(red_edges, (current_pos[0]+3, current_pos[1])):
             current_pos[0] -= 2
+            cv.circle(resized, (current_pos[1], current_pos[0]), 5, (255, 0, 0), -1)
         current_pos[1] += 10
         cv.circle(resized, (current_pos[1], current_pos[0]), 5, (255, 0, 0), -1)
-
-
-        cv.circle(resized, (current_pos[1], current_pos[0]), 5, (255, 0, 0), -1)
-
+        """
+        resized = cv.resize(resized, (512, 384))
         cv.imshow("test", resized)
 
         return self.corners, None
@@ -57,7 +60,7 @@ def is_not_red(frame, pos):
         return False
 
     try:
-        print(frame[pos[1]][pos[0]][2])
-        return frame[pos[1]][pos[0]][2] < 80
+        #print(frame[pos[1]][pos[0]])
+        return frame[pos[1]][pos[0]][2] < 110
     except IndexError:
         return False
