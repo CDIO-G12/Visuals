@@ -24,21 +24,23 @@ class Locator:
         i = -1
         for (x, y, r) in circles:
             i += 1
-            hsv_avg = int(hsv[y-1][x-1][0]/4 + hsv[y][x-1][0]/4 + hsv[y-1][x][0]/4 + hsv[y][x][0]/4)
+            hue_avg = int(hsv[y-1][x-1][0]/4 + hsv[y][x-1][0]/4 + hsv[y-1][x][0]/4 + hsv[y][x][0]/4)
+            sat_avg = int(hsv[y-1][x-1][1]/4 + hsv[y][x-1][1]/4 + hsv[y-1][x][1]/4 + hsv[y][x][1]/4)
+            val_avg = int(hsv[y-1][x-1][2]/4 + hsv[y][x-1][2]/4 + hsv[y-1][x][2]/4 + hsv[y][x][2]/4)
 
-            if hsv[y][x][2] < 150 or r < 6:
+            if val_avg < 150 or r < 6:
                 notBalls.append((x, y))
                 continue
 
             new_circles.append((x, y))
 
-            if hsv[y][x][1] < 40:
+            if sat_avg < 40:
                 continue
 
-            p_dist = hsv_distance_from_hue(hsv_avg, PINK) + ((255-hsv[y][x][1])/100)
-            g_dist = hsv_distance_from_hue(hsv_avg, GREEN) + ((255-hsv[y][x][1])/100)
+            p_dist = hsv_distance_from_hue(hue_avg, PINK) + ((255-sat_avg)/100)
+            g_dist = hsv_distance_from_hue(hue_avg, GREEN) + ((255-sat_avg)/100)
             if find_orange is True:
-                o_dist = hsv_distance_from_hue(hsv_avg, ORANGE) + ((255-hsv[y][x][1])/100)
+                o_dist = hsv_distance_from_hue(hue_avg, ORANGE) + ((255-sat_avg)/100)
             else:
                 o_dist = 9999
 
