@@ -103,15 +103,6 @@ while True:
             mask = cv.bitwise_not(cv.inRange(hsv, lower, upper))
             frame = cv.bitwise_and(frame, frame, mask=mask)
 
-            #cv.imshow("masked", frame)
-
-            """
-            gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-            gray = cv.medianBlur(gray, 5)
-            cv.imshow("masked", frame)
-            """
-
-
             if border_i <= 0:
                 border_i = 10
                 corner_array, goal = borderInstance.find_barriers(output, hsv)
@@ -142,7 +133,7 @@ while True:
             # ensure at least some circles were found
 
 
-            sleep(0.01)
+            #sleep(0.01)
 
             found_robot = [False, False]
             robot_l_r = [[0, 0], [0, 0]]
@@ -153,75 +144,6 @@ while True:
 
             if temp_circles is not None and len(temp_circles) > 0:
                 circles, robot, orange = locator.locate(hsv, temp_circles)
-
-                """
-                if countBalls != len(temp_circles):  # if we have lost a ball
-                    diff = countBalls - len(temp_circles)
-                    if diff < 0:
-                        countBalls = 0
-                    else:
-                        countBalls -= diff
-
-                # convert the (x, y) coordinates and radius of the circles to integers
-                temp_circles = np.round(temp_circles[0, :]).astype("int")
-                # loop over the (x, y) coordinates and radius of the circles
-                for (x, y, r) in temp_circles:
-
-                    if not ballFound and countBalls < ballsToFind and lastHsvNumber > 150:
-                        saturation += 5
-                        print("Sat: ", saturation)
-                    ballFound = False
-                    if not l.is_ball(hsv[y][x], saturation):
-                        if l.is_orange_ball(hsv[y][x]):
-                            cv.rectangle(output, (x - 2, y - 2), (x + 2, y + 2), (255, 255, 0), -1)
-                            ballFound = True
-                            if not np.array_equal(oldOrange, (x,y)):
-                                u.send(s, "o/%d/%d" % (x, y))
-                                # print("New orange position")
-                            oldOrange = (x,y)
-                        elif l.is_robot_right(hsv[y][x]):
-                            cv.rectangle(output, (x - 2, y - 2), (x + 2, y + 2), (0, 0, 255), -1)
-                            found_robot[1] = True
-                            robot_l_r[1] = (x,y)
-                            ballFound = True
-                        elif l.is_robot_left(hsv[y][x]):
-                            cv.rectangle(output, (x - 2, y - 2), (x + 2, y + 2), (0, 255, 0), -1)
-                            found_robot[0] = True
-                            robot_l_r[0] = (x,y)
-                            ballFound = True
-                        else:
-                            print("Circle not known: ", hsv[y][x])
-
-                        lastHsvNumber = hsv[y][x][2]
-                        continue
-                    
-                    countBalls += 1
-                    ballFound = True
-                    circles.append((x,y,r))
-                    # draw the circle in the output image, then draw a rectangle
-                    # corresponding to the center of the circle
-                    cv.circle(output, (x, y), r, (0, 255, 0), 4)
-                    # print(x,", ", y)
-                    cv.rectangle(output, (x - 2, y - 2), (x + 2, y + 2), (0, 128, 255), -1)"""
-                
-                """if found_robot[0] and found_robot[1] or True:
-                    pos = l.getAngleMidpointAndDist(robot_l_r)
-                    cv.rectangle(output, (pos[0] - 2, pos[1] - 2), (pos[0] + 2, pos[1] + 2), (255, 255, 255), -1)
-                    cv.rectangle(output, (pos[0] - 50, pos[1] - 50), (pos[0] + 50, pos[1] + 50), (255, 255, 255), 2)
-                    cv.rectangle(output, (pos[0] - 50, pos[1] - 50), (pos[0] + 50, pos[1] + 50), (255, 255, 255), 2)
-                    if robot[0] != pos[0] and robot[1] != pos[1] and robot[2] != pos[2]:
-                        success = u.send(s, ("r/%d/%d/%d" % (pos[0], pos[1], pos[2])))
-                        if not success:
-                            break
-                        robot[0] = pos[0] #x
-                        robot[1] = pos[1] #y
-                        robot[2] = pos[2] #r
-                        #print("Send: " + ("r/%d/%d/%d" % (pos[0], pos[1], pos[2])))
-                    if pixelDist != pos[3]:
-                        pixelDist = pos[3]
-                        success = u.send(s, ("p/d/%f" % pixelDist))
-                        if not success:
-                            break"""
 
             # show the output image
             # cv.imshow("output", np.hstack([frame, output]))
