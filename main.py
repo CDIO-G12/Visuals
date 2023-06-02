@@ -7,9 +7,11 @@ import borders as borders
 import database as db
 import locator as l
 import utils as u
+import os
 
 VIDEO = False # Set to true if camera not connected
 VIDEOFILE = 'video/combined.mp4'
+CAMERASOURCE = 0
 #HOST = "localhost"  # The server's hostname or IP address
 HOST = "192.168.0.102"  # The server's hostname or IP address
 PORT = 8888  # The port used by the server
@@ -42,6 +44,14 @@ dump_frame = 1
 oldGoal = None
 
 print("Waiting on MiddleMan")
+source = os.environ.get("SOURCE")
+if source is not None:
+    if source.lower() == "video":
+        VIDEO = True
+    else:
+        VIDEO = False
+        CAMERASOURCE = int(source)
+
 
 while True:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -55,7 +65,7 @@ while True:
         if VIDEO:
             cap = cv.VideoCapture(VIDEOFILE)
         else:
-            cap = cv.VideoCapture(1, cv.CAP_DSHOW)
+            cap = cv.VideoCapture(CAMERASOURCE, cv.CAP_DSHOW)
 
         if not cap.isOpened():
             print("Cannot open camera")
@@ -84,12 +94,6 @@ while True:
                     continue
                 print("Can't receive frame (stream end?). Exiting ...")
                 exit()
-
-            if dump_frame >= 5 and False:
-                dump_frame = 0
-                continue
-            dump_frame += 1
-
 
             # Our operations on the frame come here
             hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
