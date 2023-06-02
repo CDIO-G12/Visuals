@@ -9,7 +9,7 @@ import locator as l
 import utils as u
 import os
 
-VIDEO = False # Set to true if camera not connected
+VIDEO = False # Set env variable 'SOURCE' to 'VIDEO' if camera is not connected
 VIDEOFILE = 'video/combined.mp4'
 CAMERASOURCE = 0
 #HOST = "localhost"  # The server's hostname or IP address
