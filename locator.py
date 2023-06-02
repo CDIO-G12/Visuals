@@ -6,6 +6,26 @@ PINK = 180
 GREEN = 75
 ORANGE = 30
 
+def read_settings():
+    global PINK, GREEN, ORANGE
+
+    try:
+        arr = np.loadtxt("../settings.csv",
+                         delimiter=",", dtype=int)
+        i = 0
+        for line in arr:
+            if i == 0:
+                PINK = line[0]
+            elif i == 1:
+                GREEN = line[0]
+            elif i == 2:
+                ORANGE = line[0]
+                break
+            i += 1
+        print("Got PGO values from Settings.csv")
+    except FileNotFoundError:
+        pass
+
 
 class Locator:
     def __init__(self):
@@ -14,6 +34,8 @@ class Locator:
         self.circles = []
         self.last_robot = [[0, 0], [0, 0]]
         self.export = None
+        read_settings()
+
 
     def locate(self, hsv, circles, find_orange=True, ball_count=10):
         distances = ([])
