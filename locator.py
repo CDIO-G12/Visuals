@@ -10,7 +10,7 @@ def read_settings():
     global PINK, GREEN, ORANGE
 
     try:
-        arr = np.loadtxt("../settings.csv",
+        arr = np.loadtxt("settings.csv",
                          delimiter=",", dtype=int)
         i = 0
         for line in arr:
