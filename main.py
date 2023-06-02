@@ -20,6 +20,7 @@ corner_defined = True
 corner_array = []
 
 drawPoints = []
+ballOrder = []
 guideCorners = [(), (), (), ()]
 
 WHITE = 180
@@ -160,7 +161,7 @@ while True:
 
             data = u.check_data(s)  # read from middleman
             if data is not None:
-                drawPoints = []
+                first = True
                 spl = data.decode().split("\n")
                 for parts in spl:
 
@@ -173,7 +174,14 @@ while True:
                                 u.send(s, "f/t/0")
                             else:
                                 u.send(s, "f/f/0")
+                            continue
 
+                        if innerSplit[0] == "b" and len(innerSplit) > 2:
+                            if first:
+                                ballOrder = []
+                                first = False
+                            innerSplit = [int(i) for i in innerSplit[1:]]
+                            ballOrder.append((innerSplit[0], (innerSplit[1], innerSplit[2] + 15)))
                             continue
 
                         if innerSplit[0] == "gc" and len(innerSplit) > 3:
@@ -182,6 +190,9 @@ while True:
 
                         if len(innerSplit) < 5:
                             continue
+                        if first:
+                            drawPoints = []
+                            first = False
                         innerSplit = [int(i) for i in innerSplit]
                         # x/y/r/g/b
                         drawPoints.append((innerSplit[0], innerSplit[1], (innerSplit[2], innerSplit[3], innerSplit[4])))
@@ -191,6 +202,11 @@ while True:
             if drawPoints is not None and drawPoints is not []:
                 for point in drawPoints:
                     cv.rectangle(output, (point[0] - 10, point[1] - 10), (point[0] + 10, point[1] + 10), point[2], 1)
+
+            if ballOrder is not None and ballOrder is not []:
+                for ball in ballOrder:
+                    cv.putText(output, str(ball[0]), ball[1], cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2,
+                               cv.LINE_AA)
 
             if len(guideCorners) == 4 and guideCorners[0] != ():
                 cv.line(output, guideCorners[0], guideCorners[1], (200, 200, 200), 1)
