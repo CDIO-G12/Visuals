@@ -27,6 +27,17 @@ def read_settings():
     except FileNotFoundError:
         pass
 
+def make_robot_square(robot):
+    middlex, middley, mydegrees, dist = getAngleMidpointAndDist(robot)
+    mydegrees += 90
+    gx = int(robot[1][0] + (100 * np.cos(mydegrees * np.pi / 180)))
+    gy = int(robot[1][1] + (100 * np.sin(mydegrees * np.pi / 180)))
+
+    px = int(robot[0][0] + (100 * np.cos(mydegrees * np.pi / 180)))
+    py = int(robot[0][1] + (100 * np.sin(mydegrees * np.pi / 180)))
+    coords = [robot[0], robot[1], (gx, gy), (px, py)]
+    return coords
+
 
 class Locator:
     def __init__(self):
@@ -51,13 +62,13 @@ class Locator:
             val_avg = int(hsv[y-1][x-1][2]/4 + hsv[y][x-1][2]/4 + hsv[y-1][x][2]/4 + hsv[y][x][2]/4)
             #print((x, y, r), (hue_avg, sat_avg, val_avg))
 
-            """
-            coords = self.make_robot_square()
-            poly = Polygon(coords)
-            p = Point(x, y)
-            if not p.within(poly):
-                continue
-            """
+            if self.last_robot is not None:
+                coords = make_robot_square(self.last_robot)
+                poly = Polygon(coords)
+                p = Point(x, y)
+                if p.within(poly):
+                    continue
+
 
             if val_avg < 150 or r < 6:
                 continue
