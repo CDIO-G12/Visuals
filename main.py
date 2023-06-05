@@ -1,5 +1,6 @@
 import cv2 as cv
 from matplotlib import pyplot as plt
+
 import numpy as np
 from time import sleep
 import socket
@@ -203,7 +204,7 @@ while True:
                         innerSplit = [int(i) for i in innerSplit]
                         # x/y/r/g/b
                         drawPoints.append((innerSplit[0], innerSplit[1], (innerSplit[2], innerSplit[3], innerSplit[4])))
-                    except ValueError:
+                    except ValueError or IndexError:
                         pass
 
             if drawPoints is not None and drawPoints is not []:
