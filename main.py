@@ -28,8 +28,6 @@ guideCorners = [(), (), (), ()]
 WHITE = 180
 
 
-
-
 # print line_intersection((A, B), (C, D))
 pixelDist = 0
 ballsToFind = 2
@@ -83,6 +81,11 @@ while True:
         locator = l.Locator()
 
         circles_backup = []
+
+        frame_width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
+        frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
+        # Define the codec and create VideoWriter object.The output is stored in 'output.avi' file.
+        out = cv.VideoWriter('output.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
 
         while True:
             # Capture frame-by-frame
@@ -221,6 +224,10 @@ while True:
 
             # resized = cv.resize(np.hstack([output]), (512, 384))
             cv.imshow("output", np.hstack([output]))
+
+            # Write the frame into the file 'output.avi'
+            out.write(output)
+
             #cv.imshow("gray", gray)
             
 
@@ -230,6 +237,8 @@ while True:
                 exit(0)
         s.close()
         print("Lost connection.")
+
+        out.release()
 
     # When everything done, release the capture
     cap.release()
