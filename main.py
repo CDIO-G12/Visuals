@@ -12,11 +12,12 @@ import locator as l
 import utils as u
 import os
 
-VIDEO = True # Set env variable 'SOURCE' to 'VIDEO' if camera is not connected
+RECORD = False
+VIDEO = False # Set env variable 'SOURCE' to 'VIDEO' if camera is not connected
 VIDEOFILE = 'video/combined.mp4'
 CAMERASOURCE = 0
-HOST = "localhost"  # The server's hostname or IP address
-#HOST = "192.168.0.102"  # The server's hostname or IP address
+#HOST = "localhost"  # The server's hostname or IP address
+HOST = "192.168.0.102"  # The server's hostname or IP address
 PORT = 8888  # The port used by the server
 
 wall_defined = True
@@ -88,8 +89,10 @@ while True:
         frame_width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
         frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
         # Define the codec and create VideoWriter object.The output is stored in 'output.avi' file.
-        out = cv.VideoWriter('output'+ str(datetime.datetime.now()) + '.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
-
+        if RECORD:
+            out = cv.VideoWriter('output-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
+        else:
+            out = cv.VideoWriter('output.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
         while True:
             # Capture frame-by-frame
             ret, frame = cap.read()
