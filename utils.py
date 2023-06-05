@@ -35,5 +35,6 @@ def check_for_ball(hsv):
     else:
         return False
 
+
 def is_close(old, new, threshold=2):
-    return new < old + threshold and new > old - threshold
+    return old + threshold > new > old - threshold
