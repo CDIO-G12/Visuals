@@ -173,7 +173,7 @@ while True:
             else:
                 cv.imshow("output", gray)
 
-            if robot is not None:
+            if robot is not None and False:
                 robot_outline = l.make_robot_square(robot)
                 if emergency(robot_outline[2], robot_outline[3], area_border) and not exclamation:
                     exclamation = True
