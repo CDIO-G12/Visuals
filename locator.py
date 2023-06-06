@@ -39,6 +39,8 @@ def make_robot_square(robot):
     return coords
 
 
+
+
 class Locator:
     def __init__(self):
         self.balancer = 0
@@ -49,7 +51,8 @@ class Locator:
         read_settings()
 
 
-    def locate(self, hsv, circles, find_orange=True, ball_count=10):
+
+    def locate(self, hsv, circles, area_border, find_orange=True, ball_count=10):
         distances = ([])
         circles = np.round(circles[0, :]).astype("int")
         new_circles = []
@@ -69,6 +72,10 @@ class Locator:
                 if p.within(poly):
                     continue
 
+            if area_border:
+                p = Point(x, y)
+                if not p.within(area_border):
+                    continue
 
             if val_avg < 150 or r < 6:
                 continue
@@ -105,7 +112,7 @@ class Locator:
                 best_val[ball_type] = dist[1]
                 best_ball[ball_type] = dist[2]
 
-        orange = None
+        orange = (0, 0)
         if find_orange and best_ball[2] is not None:
             orange = best_ball[2]
             new_circles.remove(best_ball[2])

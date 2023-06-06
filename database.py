@@ -12,6 +12,7 @@ class Database:
         self.robot_pos = None
         self.pixel_dist = 0
         self.orange = None
+        self.robot_square = []
 
     def check_and_send(self, s, balls, robot, orange):
         if not np.array_equal(self.balls, balls):
@@ -45,6 +46,7 @@ class Database:
                 success = u.send(s, "o/%d/%d" % (orange[0], orange[1]))
                 if not success:
                     return False
+
 
         return True
 

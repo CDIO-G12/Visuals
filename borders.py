@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import cv2 as cv
 
@@ -25,9 +27,9 @@ class Borders:
         frame2 = cv.bitwise_and(frame, frame, mask=mask)
         redEdges = cv.cvtColor(frame2, cv.COLOR_BGR2GRAY)
 
-
         resized = cv.resize(redEdges, (512, 384))
         cv.imshow("test", resized)
+
         # Use canny edge detection
         edges = cv.Canny(redEdges, 50, 150, apertureSize=3)
         # Apply HoughLinesP method to
@@ -50,7 +52,7 @@ class Borders:
                 x1, y1, x2, y2 = points[0]
                 # Draw the lines joining the points
                 # On the original image
-                #cv.line(output, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                #cv.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 # Maintain a simples lookup list for points
                 lines_list.append([(x1, y1), (x2, y2)])
 
@@ -69,20 +71,39 @@ class Borders:
                     if right >= intersect[0] >= (right - interval) and lower >= intersect[1] >= (lower - interval):
                         corner_LR_arr.append((int(intersect[0]), int(intersect[1])))
 
-                    if right >= intersect[0] >= (right - interval) and upper >= intersect[1] >= 0:
+                    elif right >= intersect[0] >= (right - interval) and upper >= intersect[1] >= 0:
                         corner_UR_arr.append((int(intersect[0]), int(intersect[1])))
 
-                    if left >= intersect[0] >= 0 and upper >= intersect[1] >= 0:
+                    elif left >= intersect[0] >= (left-interval) and upper >= intersect[1] >= 0:
                         corner_UL_arr.append((int(intersect[0]), int(intersect[1])))
 
-                    if left >= intersect[0] >= 0 and lower >= intersect[1] >= (lower - interval):
+                    elif left >= intersect[0] >= (left-interval) and lower >= intersect[1] >= (lower - interval):
                         corner_LL_arr.append((int(intersect[0]), int(intersect[1])))
 
-                    else:
+                    elif 650 >= intersect[0] >= 350 >= intersect[1] >= 250:
                         cross_array.append(intersect)
-
+                    if 700 >= x[0][0] >= 400 >= x[0][1] >= 200 and 700 >= y[0][0] >= 400 >= y[0][1] >= 200:
+                        print(math.dist(x[0], y[0]))
+                        if math.dist(x[0], y[0]) <= 15:
+                            cv.circle(frame, (int(x[0][0]), int(x[0][1])), 5, (255, 0, 0), -1)
+                            cv.circle(frame, (int(y[0][0]), int(y[0][1])), 5, (255, 0, 0), -1)
+                        elif math.dist(x[1], y[0]) <= 15:
+                            cv.circle(frame, (int(x[1][0]), int(x[1][1])), 5, (255, 0, 0), -1)
+                            cv.circle(frame, (int(y[0][0]), int(y[0][1])), 5, (255, 0, 0), -1)
+                        elif math.dist(y[1], x[0]) <= 15:
+                            cv.circle(frame, (int(y[1][0]), int(y[1][1])), 5, (255, 0, 0), -1)
+                            cv.circle(frame, (int(x[0][0]), int(x[0][1])), 5, (255, 0, 0), -1)
+                        elif math.dist(y[1], x[1]) <= 15:
+                            cv.circle(frame, (int(y[1][0]), int(y[1][1])), 5, (255, 0, 0), -1)
+                            cv.circle(frame, (int(x[1][0]), int(x[1][1])), 5, (255, 0, 0), -1)
 
         counter = 0
+
+        if cross_array:
+            mean_cross = np.median(cross_array, axis=(0))
+            cv.circle(frame, (int(mean_cross[0]), int(mean_cross[1])), 5, (255, 0, 0), -1)
+        #for x in cross_array:
+            #cv.circle(frame, (int(x[0]), int(x[1])), 5, (255, 0, 0), -1)
 
         #Tilføjede dette array for at undgå IndexError: list index out of range.
         avg_corners = [] * 4
@@ -92,33 +113,27 @@ class Borders:
         meanLL = None
         meanLR = None
 
-        if corner_UL_arr is not None and len(corner_UL_arr) > 0:
+        if corner_UL_arr:
             meanUL = np.mean(corner_UL_arr, axis=(0))
             self.corners[0] = (int(meanUL[0]) + 20, int(meanUL[1]) + 20)
         else:
             avg = None
 
-        if corner_UR_arr is not None and len(corner_UR_arr) > 0:
+        if corner_UR_arr:
             meanUR = np.mean(corner_UR_arr, axis=(0))
-            avg = (int(meanUR[0]) - 20, int(meanUR[1])+20)
-            self.corners[1] = avg
-            #self.corners.append(avg)
+            self.corners[1] = (int(meanUR[0]) - 20, int(meanUR[1])+20)
         else:
             avg = None
 
-        if corner_LR_arr is not None and len(corner_LR_arr) > 0:
+        if corner_LR_arr:
             meanLR = np.mean(corner_LR_arr, axis=(0))
-            avg = (int(meanLR[0])-20, int(meanLR[1])-20)
-            self.corners[2] = avg
-            #self.corners.append(avg)
+            self.corners[2] =(int(meanLR[0])-20, int(meanLR[1])-20)
         else:
             avg = None
 
-        if corner_LL_arr is not None and len(corner_LL_arr) > 0:
+        if corner_LL_arr:
             meanLL = np.mean(corner_LL_arr, axis=(0))
-            avg = (int(meanLL[0])+20, int(meanLL[1])-20)
-            self.corners[3] = avg
-            #self.corners.append(avg)
+            self.corners[3] = (int(meanLL[0])+20, int(meanLL[1])-20)
         else:
             avg = None
 
@@ -126,13 +141,11 @@ class Borders:
         #goal_arr = []
 
         if meanLL is not None and meanLR is not None and meanUR is not None and meanUL is not None:
-            if meanUL[0] >= meanLL[0]:
-                holeL = (int(meanUL[0]), int((meanLL[1] - meanUL[1]) / 2 + meanLL[1]))
-                goal = holeL
-            else:
-                holeL = (int(meanLL[0]), int((meanLL[1] - meanUL[1]) / 2 + meanLL[1]))
-
-            goal_arr.append(holeL)
+            holeL = (int(meanUL[0]), int((meanLL[1] - meanUL[1]) / 2 + meanUL[1]))
+            goal = holeL
+            #holeR = (int(meanUR[0]), int((meanLR[1] - meanUR[1]) / 2 + meanUR[1]))
+            #goal_arr.append(holeL)
+            #goal_arr.append(holeR)
 
         return self.corners, goal
 

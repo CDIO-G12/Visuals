@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 
 import numpy as np
 from time import sleep
+from shapely.geometry import Point, Polygon
 import socket
 import borders as borders
 import database as db
@@ -29,6 +30,7 @@ drawPoints = []
 ballOrder = []
 guideCorners = [(), (), (), ()]
 
+exclamation = False
 WHITE = 180
 
 
@@ -44,6 +46,7 @@ oldOrange = (0, 0)
 border_i = 0
 dump_frame = 1
 oldGoal = None
+
 
 print("Waiting on MiddleMan")
 source = os.environ.get("SOURCE")
@@ -163,15 +166,23 @@ while True:
             circles = None
 
             if temp_circles is not None and len(temp_circles) > 0:
-                circles, robot, orange = locator.locate(hsv, temp_circles)
+                circles, robot, orange = locator.locate(hsv, temp_circles, area_border)
 
             # show the output image
             # cv.imshow("output", np.hstack([frame, output]))
             else:
                 cv.imshow("output", gray)
 
-            if circles is None:
-                continue
+            if robot is not None:
+                robot_outline = l.make_robot_square(robot)
+                if emergency(robot_outline[2], robot_outline[3], area_border) and not exclamation:
+                    exclamation = True
+                    u.send(s, '!')
+                    print("!")
+                if not emergency(robot_outline[2], robot_outline[3], area_border) and exclamation:
+                    exclamation = False
+                    print("good to go")
+
 
             success = database.check_and_send(s, circles, robot, orange)
             if not success:
@@ -267,4 +278,5 @@ while True:
     cap.release()
 
     cv.destroyAllWindows()
+
 
