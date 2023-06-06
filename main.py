@@ -13,12 +13,14 @@ import locator as l
 import utils as u
 import os
 
+STREAM = False
 RECORD = False
 VIDEO = False # Set env variable 'SOURCE' to 'VIDEO' if camera is not connected
 VIDEOFILE = 'video/combined.mp4'
-CAMERASOURCE = 0
+CAMERASOURCE = 1
 #HOST = "localhost"  # The server's hostname or IP address
 HOST = "192.168.0.102"  # The server's hostname or IP address
+#HOST = "192.168.0.101"  # The Mark's hostname or IP address
 PORT = 8888  # The port used by the server
 
 wall_defined = True
@@ -32,7 +34,6 @@ guideCorners = [(), (), (), ()]
 
 exclamation = False
 WHITE = 180
-
 
 # print line_intersection((A, B), (C, D))
 pixelDist = 0
@@ -58,6 +59,17 @@ if source is not None:
         CAMERASOURCE = int(source)
 
 
+def emergency(pPoint, gPoint, area_border):
+    p1 = Point(pPoint)
+    p2 = Point(gPoint)
+    if p1.within(area_border) and p2.within(area_border):
+        return False
+    else:
+        return True
+
+
+
+
 while True:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
@@ -81,7 +93,6 @@ while True:
         cap.set(cv.CAP_PROP_FRAME_WIDTH, 1024)
         cap.set(cv.CAP_PROP_FRAME_HEIGHT, 768)
         cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
-        # cap.set(cv.CAP_PROP_FPS, 20)
 
         borderInstance = borders.Borders()
         database = db.Database()
@@ -112,7 +123,6 @@ while True:
             gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
             gray = cv.medianBlur(gray, 5)
 
-
             output = frame.copy()
 
             picFrame = frame
@@ -122,14 +132,13 @@ while True:
             frame = cv.bitwise_and(frame, frame, mask=mask)
 
             if border_i <= 0:
-                border_i = 20
+                border_i = 1
                 corner_array, goal = borderInstance.find_barriers(output, hsv)
                 if goal is not None:
                     if goal is not oldGoal:
                         oldGoal = goal
                         u.send(s, "g/%d/%d" % (goal[0], goal[1]))
                     cv.rectangle(output, (goal[0] - 2, goal[1] - 2), (goal[0] + 2, goal[1] + 2), (255, 255, 255), -1)
-
 
                 for x in corner_array:
                     cv.circle(output, x, 5, (255, 0, 0), -1)
@@ -147,14 +156,13 @@ while True:
                             counter += 1
             border_i -= 1
 
-
+            area_border = Polygon(corner_array)
             for x in corner_array:
                 cv.circle(output, x, 5, (255, 0, 0), -1)
                 cv.imshow("output", frame)
             # detect circles in the image
             temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 5, param1=75, param2=20, minRadius=2, maxRadius=10)
             # ensure at least some circles were found
-
 
             #sleep(0.01)
 
@@ -183,6 +191,8 @@ while True:
                     exclamation = False
                     print("good to go")
 
+            if circles is None:
+                continue
 
             success = database.check_and_send(s, circles, robot, orange)
             if not success:
@@ -251,13 +261,12 @@ while True:
             # Write the frame into the file 'output.avi'
             out.write(output)
 
-            if border_i == 9:
+            if border_i == 9 and STREAM:
                 resized = cv.resize(output, (512, 384))
                 _, img_encoded = cv.imencode(".jpg", resized)
                 u.send(s, img_encoded.tobytes(), False)
 
             #cv.imshow("gray", gray)
-            
 
             # Display the resulting frame
             #cv.imshow('frame', gray)
