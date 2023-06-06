@@ -92,8 +92,6 @@ class Borders:
         meanLL = None
         meanLR = None
 
-        #for corner in self.corners:
-
         if corner_UL_arr is not None and len(corner_UL_arr) > 0:
             meanUL = np.mean(corner_UL_arr, axis=(0))
             self.corners[0] = (int(meanUL[0]) + 20, int(meanUL[1]) + 20)
@@ -137,7 +135,6 @@ class Borders:
             goal_arr.append(holeL)
 
         return self.corners, goal
-
 
 def line_intersection(line1, line2):
     xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
