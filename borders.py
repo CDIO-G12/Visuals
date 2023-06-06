@@ -96,9 +96,7 @@ class Borders:
 
         if corner_UL_arr is not None and len(corner_UL_arr) > 0:
             meanUL = np.mean(corner_UL_arr, axis=(0))
-            avg = (int(meanUL[0]) + 60, int(meanUL[1])+20)
-            self.corners[0] = avg
-            #self.corners[0] =avg
+            self.corners[0] = (int(meanUL[0]) + 20, int(meanUL[1]) + 20)
         else:
             avg = None
 
@@ -127,7 +125,8 @@ class Borders:
             avg = None
 
         goal = (0, 0)
-        goal_arr = []
+        #goal_arr = []
+
         if meanLL is not None and meanLR is not None and meanUR is not None and meanUL is not None:
             if meanUL[0] >= meanLL[0]:
                 holeL = (int(meanUL[0]), int((meanLL[1] - meanUL[1]) / 2 + meanLL[1]))

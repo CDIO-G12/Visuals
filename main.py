@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from time import sleep
 import socket
-import borders_2 as borders
+import borders as borders
 import database as db
 import locator as l
 import utils as u
@@ -112,13 +112,14 @@ while True:
 
             output = frame.copy()
 
+            picFrame = frame
             lower = np.array([0, 0, 0], dtype="uint8")
             upper = np.array([255, 255, 180], dtype="uint8")
             mask = cv.bitwise_not(cv.inRange(hsv, lower, upper))
             frame = cv.bitwise_and(frame, frame, mask=mask)
 
             if border_i <= 0:
-                border_i = 10
+                border_i = 20
                 corner_array, goal = borderInstance.find_barriers(output, hsv)
                 if goal is not None:
                     if goal is not oldGoal:
@@ -127,22 +128,27 @@ while True:
                     cv.rectangle(output, (goal[0] - 2, goal[1] - 2), (goal[0] + 2, goal[1] + 2), (255, 255, 255), -1)
 
 
+                for x in corner_array:
+                    cv.circle(output, x, 5, (255, 0, 0), -1)
+                    cv.imshow("output", frame)
+
+                    counter = 0
+                    if corner_array:
+                        edges_sent = True
+                        #print("Corners: ")
+                        for corner in corner_array:
+                            if corner is None:
+                                continue
+                            u.send(s, "c/%d/%d/%d" % (counter, corner[0], corner[1]))
+                            #print(corner)
+                            counter += 1
+            border_i -= 1
+
+
             for x in corner_array:
                 cv.circle(output, x, 5, (255, 0, 0), -1)
                 cv.imshow("output", frame)
-
-                counter = 0
-                if corner_array:
-                    edges_sent = True
-                    #print("Corners: ")
-                    for corner in corner_array:
-                        if corner is None:
-                            continue
-                        u.send(s, "c/%d/%d/%d" % (counter, corner[0], corner[1]))
-                        #print(corner)
-                        counter += 1
-            border_i -= 1
-
+            # detect circles in the image
             temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 5, param1=75, param2=20, minRadius=2, maxRadius=10)
             # ensure at least some circles were found
 
@@ -239,8 +245,14 @@ while True:
 
             # Display the resulting frame
             #cv.imshow('frame', gray)
-            if cv.waitKey(1) == ord('q'):
+            k = cv.waitKey(1)
+            if k == ord('q'):
                 exit(0)
+            elif k == ord(' '):
+                # SPACE pressed
+                img_name = "opencv_frame_{}.png".format(1)
+                cv.imwrite(img_name, picFrame)
+                print("{} written!".format(img_name))
         s.close()
         print("Lost connection.")
 
