@@ -1,10 +1,11 @@
 import argparse
 import math
 import numpy as np
+from shapely.geometry import Point, Polygon
 
 PINK = 180
-GREEN = 75
-ORANGE = 30
+GREEN = 50
+ORANGE = 20
 
 def read_settings():
     global PINK, GREEN, ORANGE
@@ -26,6 +27,17 @@ def read_settings():
     except FileNotFoundError:
         pass
 
+def make_robot_square(robot):
+    middlex, middley, mydegrees, dist = getAngleMidpointAndDist(robot)
+    mydegrees += 90
+    gx = int(robot[1][0] + (100 * np.cos(mydegrees * np.pi / 180)))
+    gy = int(robot[1][1] + (100 * np.sin(mydegrees * np.pi / 180)))
+
+    px = int(robot[0][0] + (100 * np.cos(mydegrees * np.pi / 180)))
+    py = int(robot[0][1] + (100 * np.sin(mydegrees * np.pi / 180)))
+    coords = [robot[0], robot[1], (gx, gy), (px, py)]
+    return coords
+
 
 class Locator:
     def __init__(self):
@@ -42,21 +54,28 @@ class Locator:
         circles = np.round(circles[0, :]).astype("int")
         new_circles = []
 
-        notBalls = []
         i = -1
         for (x, y, r) in circles:
             i += 1
             hue_avg = int(hsv[y-1][x-1][0]/4 + hsv[y][x-1][0]/4 + hsv[y-1][x][0]/4 + hsv[y][x][0]/4)
             sat_avg = int(hsv[y-1][x-1][1]/4 + hsv[y][x-1][1]/4 + hsv[y-1][x][1]/4 + hsv[y][x][1]/4)
             val_avg = int(hsv[y-1][x-1][2]/4 + hsv[y][x-1][2]/4 + hsv[y-1][x][2]/4 + hsv[y][x][2]/4)
+            #print((x, y, r), (hue_avg, sat_avg, val_avg))
+
+            if self.last_robot is not None:
+                coords = make_robot_square(self.last_robot)
+                poly = Polygon(coords)
+                p = Point(x, y)
+                if p.within(poly):
+                    continue
+
 
             if val_avg < 150 or r < 6:
-                notBalls.append((x, y))
                 continue
 
             new_circles.append((x, y))
 
-            if sat_avg < 40:
+            if sat_avg < 50:
                 continue
 
             p_dist = hsv_distance_from_hue(hue_avg, PINK) + ((255-sat_avg)/100)
@@ -78,6 +97,7 @@ class Locator:
         best_val = [9999, 9999, 9999]
 
         best_ball = [(0, 0), (0, 0), None]
+        #print(distances)
 
         for dist in distances:
             ball_type = dist[0]

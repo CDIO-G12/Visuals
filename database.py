@@ -4,6 +4,7 @@ import cv2 as cv
 import locator as l
 
 
+
 class Database:
     def __init__(self):
         self.balls = []
@@ -54,8 +55,19 @@ class Database:
         cv.circle(frame, (self.robot[0][0], self.robot[0][1]), 4, (187, 255, 0), 2)
         cv.circle(frame, (self.robot[1][0], self.robot[1][1]), 4, (170, 0, 255), 2)
         cv.rectangle(frame, (pos[0] - 2, pos[1] - 2), (pos[0] + 2, pos[1] + 2), (255, 255, 255), -1)
-        cv.rectangle(frame, (pos[0] - 50, pos[1] - 50), (pos[0] + 50, pos[1] + 50), (255, 255, 255), 2)
-        cv.rectangle(frame, (pos[0] - 50, pos[1] - 50), (pos[0] + 50, pos[1] + 50), (255, 255, 255), 2)
+
+        coords = l.make_robot_square(self.robot)
+
+        cv.circle(frame, coords[2], 4, (170, 0, 255), 2)
+        cv.circle(frame, coords[3], 4, (187, 255, 0), 2)
+
+        cv.line(frame, coords[0], coords[1], (255, 255, 255), 3)
+        cv.line(frame, coords[1], coords[2], (255, 255, 255), 3)
+        cv.line(frame, coords[2], coords[3], (255, 255, 255), 3)
+        cv.line(frame, coords[0], coords[3], (255, 255, 255), 3)
+
+        #cv.rectangle(frame, (pos[0] - 40, pos[1] - 40), (pos[0] + 70, pos[1] + 40), (255, 255, 255), 2)
+        #cv.rectangle(frame, (pos[0] - 50, pos[1] - 50), (pos[0] + 50, pos[1] + 50), (255, 255, 255), 2)
 
 
         if self.orange is not None:
