@@ -222,11 +222,16 @@ while True:
                 cv.line(output, guideCorners[3], guideCorners[0], (200, 200, 200), 1)
 
 
-            # resized = cv.resize(np.hstack([output]), (512, 384))
+
             cv.imshow("output", np.hstack([output]))
 
             # Write the frame into the file 'output.avi'
             out.write(output)
+
+            if border_i == 9:
+                resized = cv.resize(output, (512, 384))
+                _, img_encoded = cv.imencode(".jpg", resized)
+                u.send(s, img_encoded.tobytes(), False
 
             #cv.imshow("gray", gray)
             

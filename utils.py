@@ -1,13 +1,21 @@
 import select
 
 
-def send(s, package):
+def send(s, package, add_new_line = True):
     try:
-        package += "\n"
-        # print(package)
-        s.sendall(package.encode())
+        if add_new_line:
+            package += "\n"
+
+        try:
+            encoded = package.encode()
+        except AttributeError:
+            encoded = package
+
+        s.sendall(encoded)
     except ValueError:
         s.close()
+        return False
+    except ConnectionResetError:
         return False
     return True
 
@@ -24,7 +32,9 @@ def check_data(s):
                 rs.close()
             else:
                 return data
-    except ValueError or ConnectionResetError:
+    except ValueError:
+        return None
+    except ConnectionResetError:
         return None
     return None
 
