@@ -243,7 +243,7 @@ while True:
             if border_i == 9:
                 resized = cv.resize(output, (512, 384))
                 _, img_encoded = cv.imencode(".jpg", resized)
-                u.send(s, img_encoded.tobytes(), False
+                u.send(s, img_encoded.tobytes(), False)
 
             #cv.imshow("gray", gray)
             
