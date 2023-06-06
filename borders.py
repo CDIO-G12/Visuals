@@ -74,8 +74,10 @@ class Borders:
 
         for x in lines_list:
             for y in lines_list:
-                if y != x:
-                    intersect = line_intersection(x, y)
+                if y == x:
+                    continue
+
+                intersect = line_intersection(x, y)
 
                 if right >= intersect[0] >= (right - interval) and lower >= intersect[1] >= (lower - interval):
                     corner_LR_arr.append((int(intersect[0]), int(intersect[1])))
@@ -89,32 +91,30 @@ class Borders:
                 elif left >= intersect[0] >= (left-interval) and lower >= intersect[1] >= (lower - interval):
                     corner_LL_arr.append((int(intersect[0]), int(intersect[1])))
 
-                    elif 650 >= intersect[0] >= 350 >= intersect[1] >= 250:
-                        cross_array.append(intersect)
-                    if 700 >= x[0][0] >= 400 >= x[0][1] >= 200 and 700 >= y[0][0] >= 400 >= y[0][1] >= 200:
-                        print(math.dist(x[0], y[0]))
-                        if math.dist(x[0], y[0]) <= 15:
-                            cv.circle(frame, (int(x[0][0]), int(x[0][1])), 5, (255, 0, 0), -1)
-                            cv.circle(frame, (int(y[0][0]), int(y[0][1])), 5, (255, 0, 0), -1)
-                        elif math.dist(x[1], y[0]) <= 15:
-                            cv.circle(frame, (int(x[1][0]), int(x[1][1])), 5, (255, 0, 0), -1)
-                            cv.circle(frame, (int(y[0][0]), int(y[0][1])), 5, (255, 0, 0), -1)
-                        elif math.dist(y[1], x[0]) <= 15:
-                            cv.circle(frame, (int(y[1][0]), int(y[1][1])), 5, (255, 0, 0), -1)
-                            cv.circle(frame, (int(x[0][0]), int(x[0][1])), 5, (255, 0, 0), -1)
-                        elif math.dist(y[1], x[1]) <= 15:
-                            cv.circle(frame, (int(y[1][0]), int(y[1][1])), 5, (255, 0, 0), -1)
-                            cv.circle(frame, (int(x[1][0]), int(x[1][1])), 5, (255, 0, 0), -1)
+                if 700 >= x[0][0] >= 300 and 500 >= x[0][1] >= 200 \
+                        and 700 >= y[0][0] >= 300 and 500 >= y[0][1] >= 200 and False:
 
-        counter = 0
+                    avg = None
+                    if math.dist(x[0], y[0]) <= 15:
+                        avg = np.mean([x[0], y[0]], axis=(0))
+                        #cv.circle(frame, (int(avg[0]), int(avg[1])), 5, (255, 0, 255), -1)
+                    if math.dist(x[1], y[1]) <= 15:
+                        avg = np.mean([x[1], y[1]], axis=(0))
+                        #cv.circle(frame, (int(avg[0]), int(avg[1])), 5, (255, 0, 0), -1)
 
-        if cross_array:
-            mean_cross = np.median(cross_array, axis=(0))
-            cv.circle(frame, (int(mean_cross[0]), int(mean_cross[1])), 5, (255, 0, 0), -1)
-        #for x in cross_array:
-            #cv.circle(frame, (int(x[0]), int(x[1])), 5, (255, 0, 0), -1)
+                    if avg:
+                        if min_X > avg[0] or not min_X:
+                            min_X = avg[0]
 
-        #Tilføjede dette array for at undgå IndexError: list index out of range.
+
+
+        if min_X:
+            cv.circle(frame, (int(min_X[0]), int(min_X[1])), 5, (255, 0, 0), -1)
+
+
+
+
+        #Tilføjede dette Yrray for at undgå IndexError: list index out of range.
         avg_corners = [] * 4
 
         meanUL = None
