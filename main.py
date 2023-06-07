@@ -16,11 +16,11 @@ import os
 STREAM = False
 RECORD = False
 VIDEO = True # Set env variable 'SOURCE' to 'VIDEO' if camera is not connected
-VIDEOFILE = 'video/combined.mp4'
+VIDEOFILE = 'video/output-20230607-090420.avi'
 CAMERASOURCE = 1
-HOST = "localhost"  # The server's hostname or IP address
+#HOST = "localhost"  # The server's hostname or IP address
 #HOST = "192.168.0.102"  # The server's hostname or IP address
-#HOST = "192.168.0.101"  # The Mark's hostname or IP address
+HOST = "192.168.0.101"  # The Mark's hostname or IP address
 PORT = 8888  # The port used by the server
 
 wall_defined = True
@@ -125,6 +125,7 @@ while True:
             gray = cv.medianBlur(gray, 5)
 
             output = frame.copy()
+            out.write(output)
 
             picFrame = frame
             lower = np.array([0, 0, 0], dtype="uint8")
@@ -157,6 +158,7 @@ while True:
                             counter += 1
             border_i -= 1
 
+            area_border = None
             if corner_array is not None and len(corner_array) > 3:
                 area_border = Polygon(corner_array)
             for x in corner_array:
@@ -261,7 +263,7 @@ while True:
             cv.imshow("output", np.hstack([output]))
 
             # Write the frame into the file 'output.avi'
-            out.write(output)
+            #out.write(output)
 
             if border_i == 9 and STREAM:
                 resized = cv.resize(output, (512, 384))
