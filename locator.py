@@ -77,6 +77,7 @@ class Locator:
                 if not p.within(area_border):
                     continue
 
+            #print(hue_avg, sat_avg, val_avg, r)
             if val_avg < 150 or r < 6:
                 continue
 
@@ -88,7 +89,7 @@ class Locator:
             p_dist = hsv_distance_from_hue(hue_avg, PINK) + ((255-sat_avg)/100)
             g_dist = hsv_distance_from_hue(hue_avg, GREEN) + ((255-sat_avg)/100)
             if find_orange is True:
-                o_dist = hsv_distance_from_hue(hue_avg, ORANGE) + ((255-sat_avg)/100)
+                o_dist = hsv_distance_from_hue(hue_avg, ORANGE) + ((255-sat_avg)/10)
             else:
                 o_dist = 9999
 
@@ -117,18 +118,13 @@ class Locator:
             orange = best_ball[2]
             new_circles.remove(best_ball[2])
         robot = None
-        if best_ball[0] != (0, 0) and best_ball[1] != (0, 0):
+        if best_ball[0] != (0, 0) and best_ball[1] != (0, 0) and is_close(best_ball[0], best_ball[1], 80):
             robot = [best_ball[0], best_ball[1]]
 
         if best_ball[0] in new_circles:
             new_circles.remove(best_ball[0])
         if best_ball[1] in new_circles:
             new_circles.remove(best_ball[1])
-
-        if self.balls_close_enough(new_circles):
-            temp = robot
-            robot = self.last_robot
-            self.last_robot = temp
 
         if self.balls_close_enough(new_circles):
             self.balancer += 1
@@ -202,3 +198,9 @@ def getAngleMidpointAndDist(robot_pos):
 def is_robot(frame):
     #print(frame)
     return frame[0] < 160 and frame[1] > 180 and frame[2] > 230
+
+def is_close(point1, point2, thresh = 5):
+    x = abs(point1[0] - point2[0])
+    y = abs(point1[1] - point2[1])
+    dist = math.sqrt(x**2 + y**2)
+    return dist < thresh
