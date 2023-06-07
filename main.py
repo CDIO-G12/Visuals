@@ -27,6 +27,7 @@ wall_defined = True
 corner_defined = True
 
 corner_array = []
+cross_array = []
 
 drawPoints = []
 ballOrder = []
@@ -104,9 +105,9 @@ while True:
         frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
         # Define the codec and create VideoWriter object.The output is stored in 'output.avi' file.
         if RECORD:
-            out = cv.VideoWriter('output-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
+            out = cv.VideoWriter('video/output-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
         else:
-            out = cv.VideoWriter('output.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
+            out = cv.VideoWriter('video/output.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
         while True:
             # Capture frame-by-frame
             ret, frame = cap.read()
@@ -132,8 +133,8 @@ while True:
             frame = cv.bitwise_and(frame, frame, mask=mask)
 
             if border_i <= 0:
-                border_i = 1
-                corner_array, goal = borderInstance.find_barriers(output, hsv)
+                border_i = 10
+                corner_array, goal, cross_array = borderInstance.find_barriers(output, hsv)
                 if goal is not None:
                     if goal is not oldGoal:
                         oldGoal = goal
