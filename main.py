@@ -15,7 +15,7 @@ import os
 
 STREAM = False
 RECORD = False
-VIDEO = True # Set env variable 'SOURCE' to 'VIDEO' if camera is not connected
+VIDEO = False # Set env variable 'SOURCE' to 'VIDEO' if camera is not connected
 VIDEOFILE = 'video/output-20230607-090420.avi'
 CAMERASOURCE = 1
 #HOST = "localhost"  # The server's hostname or IP address

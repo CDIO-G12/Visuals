@@ -107,9 +107,6 @@ def make_robot_square(robot):
     coords = [robot[0], robot[1], (gx, gy), (px, py)]
     return coords
 
-
-
-
 class Locator:
     def __init__(self):
         self.balancer = 0
@@ -118,8 +115,6 @@ class Locator:
         self.last_robot = [[0, 0], [0, 0]]
         self.export = None
         read_settings()
-
-
 
     def locate(self, hsv, circles, area_border, find_orange=True, ball_count=10):
         distances = ([])
