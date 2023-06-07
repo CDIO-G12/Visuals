@@ -15,11 +15,11 @@ import os
 
 STREAM = False
 RECORD = False
-VIDEO = False # Set env variable 'SOURCE' to 'VIDEO' if camera is not connected
+VIDEO = True # Set env variable 'SOURCE' to 'VIDEO' if camera is not connected
 VIDEOFILE = 'video/combined.mp4'
 CAMERASOURCE = 1
-#HOST = "localhost"  # The server's hostname or IP address
-HOST = "192.168.0.102"  # The server's hostname or IP address
+HOST = "localhost"  # The server's hostname or IP address
+#HOST = "192.168.0.102"  # The server's hostname or IP address
 #HOST = "192.168.0.101"  # The Mark's hostname or IP address
 PORT = 8888  # The port used by the server
 
@@ -156,7 +156,8 @@ while True:
                             counter += 1
             border_i -= 1
 
-            area_border = Polygon(corner_array)
+            if corner_array is not None and len(corner_array) > 3:
+                area_border = Polygon(corner_array)
             for x in corner_array:
                 cv.circle(output, x, 5, (255, 0, 0), -1)
                 cv.imshow("output", frame)
