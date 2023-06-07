@@ -23,9 +23,7 @@ class Borders:
         if self.cross_array[3] is None or self.cross_array[3][1] < avg[1]:
             self.cross_array[3] = avg
 
-
-
-    def find_barriers(self, frame, hsv):
+    def find_barriers(self, frame, hsv, width, height):
         self.corners = [None] * 4
         self.cross_array = [None] * 4
         corner_LL_arr = []
@@ -105,8 +103,8 @@ class Borders:
                 elif left >= intersect[0] >= (left-interval) and lower >= intersect[1] >= (lower - interval):
                     corner_LL_arr.append((int(intersect[0]), int(intersect[1])))
 
-                if 700 >= x[0][0] >= 300 and 500 >= x[0][1] >= 200 \
-                        and 700 >= y[0][0] >= 300 and 500 >= y[0][1] >= 200:
+                if 0.7*width >= x[0][0] >= 0.3*width and 0.65*height >= x[0][1] >= 0.25*height \
+                        and 0.7*width >= y[0][0] >= 0.3*width and 0.65*height >= y[0][1] >= 0.25*height:
 
                     if math.dist(x[0], y[0]) <= 15:
                         avg = np.mean([x[0], y[0]], axis=(0))
@@ -153,7 +151,6 @@ class Borders:
             # goal_arr.append(holeR)
 
         return self.corners, goal, self.cross_array
-
 
 def line_intersection(line1, line2):
     xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
