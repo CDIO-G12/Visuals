@@ -27,6 +27,75 @@ def read_settings():
     except FileNotFoundError:
         pass
 
+
+
+
+def calculate_robot_position(frame, robot):
+    # Constants
+    robot_dist_cm = 15.5  # cm distance between circles on robot
+    cam_height = 155  # Camera height in cm, from ground
+    robot_height = 12  # Robot height in cm, from ground
+
+    # Calculate pixel ratio
+    pixel_ratio = robot_dist_cm / getPixelDist(robot)
+
+    # Calculate robot positions
+    for i in range(2):
+        dist_from_cntr = getPixelDist([((len(frame[0]) // 2), (len(frame[1]) // 2)), robot[i]])
+        dist_from_cntr_cm = dist_from_cntr * pixel_ratio
+        angle = np.arctan(cam_height / dist_from_cntr_cm)
+        dx = cam_height / np.tan(angle)
+        x_direction = -1 if robot[i][0] > (len(frame[0]) // 2) else 1
+        y_direction = -1 if robot[i][1] > (len(frame[1]) // 2) else 1
+        new_x = int(robot[i][0] + (x_direction * dx))
+        new_y = int(robot[i][1] + (x_direction * dx))
+        robot[i] = (new_x, new_y)
+
+
+    """
+    dist = getPixelDist(robot)  # pixel distance between circles on robot
+    robot_dist_cm = 15.5  # cm distance between circles on robot
+    cam_height = 155  # Camera height in cm, from ground. Defined as some constant
+    robot_height = 12  # Robot height in cm, from ground. Defined as some constant
+
+    # calculate factor to convert pixels to cm
+    pixel_ratio = robot_dist_cm/dist
+
+    x_mid = int(len(frame[0]) / 2)
+    y_mid = int(len(frame[1]) / 2)
+
+    cntr = (int(len(frame[0]) / 2), int(len(frame[1]) / 2)) # center of frame in pixels
+    dist_from_cntr = getPixelDist([cntr, robot[0]]) # distance from center of frame to robot in pixels
+    dist_from_cntr_cm = dist_from_cntr * pixel_ratio
+    angle = np.arctan(cam_height/dist_from_cntr_cm)
+    dx1 = cam_height/np.tan(angle)
+
+    dist_from_cntr = getPixelDist([cntr, robot[1]])  # distance from center of frame to robot in pixels
+    dist_from_cntr_cm = dist_from_cntr * pixel_ratio
+    angle = np.arctan(cam_height / dist_from_cntr_cm)
+    dx2 = cam_height / np.tan(angle)
+
+    if robot[0][0] >= x_mid:
+        robot[0][0] -= dx1
+    elif robot[0][0] <= x_mid:
+        robot[0][0] += dx1
+    if robot[0][1] >= y_mid:
+        robot[0][1] -= dx1
+    elif robot[0][1] <= y_mid:
+        robot[0][1] += dx1
+
+    if robot[1][0] >= x_mid:
+        robot[1][0] -= dx2
+    elif robot[1][0] <= x_mid:
+        robot[1][0] += dx2
+    if robot[0][1] >= y_mid:
+        robot[1][1] -= dx2
+    elif robot[1][1] <= y_mid:
+        robot[1][1] += dx2
+
+    """
+    return robot
+
 def make_robot_square(robot):
     middlex, middley, mydegrees, dist = getAngleMidpointAndDist(robot)
     mydegrees += 90
@@ -38,9 +107,6 @@ def make_robot_square(robot):
     coords = [robot[0], robot[1], (gx, gy), (px, py)]
     return coords
 
-
-
-
 class Locator:
     def __init__(self):
         self.balancer = 0
@@ -49,8 +115,6 @@ class Locator:
         self.last_robot = [[0, 0], [0, 0]]
         self.export = None
         read_settings()
-
-
 
     def locate(self, hsv, circles, area_border, find_orange=True, ball_count=10):
         distances = ([])
@@ -120,6 +184,7 @@ class Locator:
         robot = None
         if best_ball[0] != (0, 0) and best_ball[1] != (0, 0) and is_close(best_ball[0], best_ball[1], 80):
             robot = [best_ball[0], best_ball[1]]
+            #robot = calculate_robot_position(hsv, robot)
 
         if best_ball[0] in new_circles:
             new_circles.remove(best_ball[0])
@@ -141,7 +206,6 @@ class Locator:
             self.export = new_circles
 
         return self.export, robot, orange
-
 
     def balls_close_enough(self, new_circles):
         if self.best is None:
@@ -191,9 +255,11 @@ def getAngleMidpointAndDist(robot_pos):
     mydegrees = int(math.degrees(myradians))
     middlex = int((robot_pos[0][0]+robot_pos[1][0])/2)
     middley = int((robot_pos[0][1]+robot_pos[1][1])/2)
-    dist = math.sqrt(math.pow(robot_pos[0][0]-robot_pos[1][0], 2)+math.pow(robot_pos[0][1]-robot_pos[1][1], 2))
+    dist = getPixelDist(robot_pos)
     return middlex, middley, mydegrees, dist
 
+def getPixelDist(robot_pos):
+    return math.sqrt(math.pow(robot_pos[0][0] - robot_pos[1][0], 2) + math.pow(robot_pos[0][1] - robot_pos[1][1], 2))
 
 def is_robot(frame):
     #print(frame)

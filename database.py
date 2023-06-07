@@ -13,20 +13,9 @@ class Database:
         self.pixel_dist = 0
         self.orange = None
         self.robot_square = []
+        self.oldGoal = None
 
-    def check_and_send(self, s, balls, robot, orange):
-        if not np.array_equal(self.balls, balls):
-            self.balls = balls
-            success = u.send(s, "b/r/r")
-            if not success:
-                return False
-            for (x, y) in balls:
-                success = u.send(s, ("b/%d/%d" % (x, y)))
-                if not success:
-                    return False
-            success = u.send(s, "b/d/d")
-            if not success:
-                return False
+    def check_and_send(self, s, balls, robot, orange, corner_array, cross_array, goal):
 
         if self.robot is not robot and robot is not None:
             self.robot = robot
@@ -40,6 +29,19 @@ class Database:
                 if not success:
                     return False
 
+        if not np.array_equal(self.balls, balls):
+            self.balls = balls
+            success = u.send(s, "b/r/r")
+            if not success:
+                return False
+            for (x, y) in balls:
+                success = u.send(s, ("b/%d/%d" % (x, y)))
+                if not success:
+                    return False
+            success = u.send(s, "b/d/d")
+            if not success:
+                return False
+
         if self.orange != orange:
             self.orange = orange
             if orange is not None:
@@ -47,6 +49,30 @@ class Database:
                 if not success:
                     return False
 
+        if corner_array is None and cross_array is None and goal is None:
+            return True
+
+        if goal is not None:
+
+            if goal is not self.oldGoal:
+                self.oldGoal = goal
+                u.send(s, "g/%d/%d" % (goal[0], goal[1]))
+
+        if corner_array is not None:
+            counter = 0
+            for corner in corner_array:
+                if corner is None:
+                    continue
+                u.send(s, "c/%d/%d/%d" % (counter, corner[0], corner[1]))
+                counter += 1
+
+        if cross_array is not None:
+            counter = 0
+            for corner in cross_array:
+                if corner is None:
+                    continue
+                u.send(s, "c/%d/%d/%d" % (counter, corner[0], corner[1]))
+                counter += 1
 
         return True
 

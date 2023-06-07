@@ -15,18 +15,20 @@ import os
 
 STREAM = False
 RECORD = False
-VIDEO = True # Set env variable 'SOURCE' to 'VIDEO' if camera is not connected
-VIDEOFILE = 'video/combined.mp4'
+VIDEO = False # Set env variable 'SOURCE' to 'VIDEO' if camera is not connected
+VIDEOFILE = 'video/output-20230607-090420.avi'
 CAMERASOURCE = 1
-HOST = "localhost"  # The server's hostname or IP address
+#HOST = "localhost"  # The server's hostname or IP address
 #HOST = "192.168.0.102"  # The server's hostname or IP address
-#HOST = "192.168.0.101"  # The Mark's hostname or IP address
+HOST = "192.168.0.101"  # The Mark's hostname or IP address
 PORT = 8888  # The port used by the server
+
 
 wall_defined = True
 corner_defined = True
 
 corner_array = []
+cross_array = []
 
 drawPoints = []
 ballOrder = []
@@ -34,6 +36,9 @@ guideCorners = [(), (), (), ()]
 
 exclamation = False
 WHITE = 180
+
+WIDTH = 1024
+HEIGHT = 768
 
 # print line_intersection((A, B), (C, D))
 pixelDist = 0
@@ -104,9 +109,9 @@ while True:
         frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
         # Define the codec and create VideoWriter object.The output is stored in 'output.avi' file.
         if RECORD:
-            out = cv.VideoWriter('output-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
+            out = cv.VideoWriter('video/output-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
         else:
-            out = cv.VideoWriter('output.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
+            out = cv.VideoWriter('video/output.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
         while True:
             # Capture frame-by-frame
             ret, frame = cap.read()
@@ -124,6 +129,7 @@ while True:
             gray = cv.medianBlur(gray, 5)
 
             output = frame.copy()
+            out.write(output)
 
             picFrame = frame
             lower = np.array([0, 0, 0], dtype="uint8")
@@ -133,34 +139,29 @@ while True:
 
             if border_i <= 0:
                 border_i = 1
-                corner_array, goal = borderInstance.find_barriers(output, hsv)
+                corner_array, goal, cross_array = borderInstance.find_barriers(output, hsv, WIDTH, HEIGHT)
                 if goal is not None:
-                    if goal is not oldGoal:
-                        oldGoal = goal
-                        u.send(s, "g/%d/%d" % (goal[0], goal[1]))
                     cv.rectangle(output, (goal[0] - 2, goal[1] - 2), (goal[0] + 2, goal[1] + 2), (255, 255, 255), -1)
 
                 for x in corner_array:
                     cv.circle(output, x, 5, (255, 0, 0), -1)
                     cv.imshow("output", frame)
+                for point in cross_array:
+                    if point is not None:
+                        cv.circle(frame, (int(point[0]), int(point[1])), 5, (255, 0, 0), -1)
+            else:
+                corner_array = None
+                cross_array = None
+                goal = None
 
-                    counter = 0
-                    if corner_array:
-                        edges_sent = True
-                        #print("Corners: ")
-                        for corner in corner_array:
-                            if corner is None:
-                                continue
-                            u.send(s, "c/%d/%d/%d" % (counter, corner[0], corner[1]))
-                            #print(corner)
-                            counter += 1
             border_i -= 1
 
+            area_border = None
             if corner_array is not None and len(corner_array) > 3:
                 area_border = Polygon(corner_array)
-            for x in corner_array:
-                cv.circle(output, x, 5, (255, 0, 0), -1)
-                cv.imshow("output", frame)
+                for x in corner_array:
+                    cv.circle(output, x, 5, (255, 0, 0), -1)
+                    cv.imshow("output", frame)
             # detect circles in the image
             temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 5, param1=75, param2=20, minRadius=2, maxRadius=10)
             # ensure at least some circles were found
@@ -195,7 +196,7 @@ while True:
             if circles is None:
                 continue
 
-            success = database.check_and_send(s, circles, robot, orange)
+            success = database.check_and_send(s, circles, robot, orange, corner_array, cross_array, goal)
             if not success:
                 break
             database.highlight(output)
@@ -260,7 +261,7 @@ while True:
             cv.imshow("output", np.hstack([output]))
 
             # Write the frame into the file 'output.avi'
-            out.write(output)
+            #out.write(output)
 
             if border_i == 9 and STREAM:
                 resized = cv.resize(output, (512, 384))
