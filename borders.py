@@ -82,8 +82,6 @@ class Borders:
         lower = 570
         interval = 100
 
-
-
         for x in lines_list:
             for y in lines_list:
                 if y == x:
@@ -106,39 +104,30 @@ class Borders:
                 if 0.7*width >= x[0][0] >= 0.3*width and 0.65*height >= x[0][1] >= 0.25*height \
                         and 0.7*width >= y[0][0] >= 0.3*width and 0.65*height >= y[0][1] >= 0.25*height:
 
-                    if math.dist(x[0], y[0]) <= 15:
-                        avg = np.mean([x[0], y[0]], axis=(0))
-                        self.check_point_in_cross(avg)
-
-                    if math.dist(x[1], y[1]) <= 15:
-                        avg = np.mean([x[1], y[1]], axis=(0))
-                        self.check_point_in_cross(avg)
+                    points = {0: [x[0], y[0]], 1: [x[1], y[1]]}
+                    for key, value in points.items():
+                        if math.dist(value[0], value[1]) <= 15:
+                            avg = np.mean(value, axis=0)
+                            self.check_point_in_cross(avg)
 
         for point in self.cross_array:
-            cv.circle(frame, (int(point[0]), int(point[1])), 5, (255, 0, 0), -1)
+            if point is not None:
+                cv.circle(frame, (int(point[0]), int(point[1])), 5, (255, 0, 0), -1)
 
         meanUL = None
         meanUR = None
         meanLL = None
         meanLR = None
 
+        corner_dict = {'UL': corner_UL_arr, 'UR': corner_UR_arr, 'LR': corner_LR_arr, 'LL': corner_LL_arr}
         offset = 15
 
-        if corner_UL_arr:
-            meanUL = np.mean(corner_UL_arr, axis=(0))
-            self.corners[0] = (int(meanUL[0]) + offset, int(meanUL[1]) + offset)
-
-        if corner_UR_arr:
-            meanUR = np.mean(corner_UR_arr, axis=(0))
-            self.corners[1] = (int(meanUR[0]) - offset, int(meanUR[1])+offset)
-
-        if corner_LR_arr:
-            meanLR = np.mean(corner_LR_arr, axis=(0))
-            self.corners[2] =(int(meanLR[0])-offset, int(meanLR[1])-offset)
-
-        if corner_LL_arr:
-            meanLL = np.mean(corner_LL_arr, axis=(0))
-            self.corners[3] = (int(meanLL[0])+offset, int(meanLL[1])-offset)
+        for i, corner in enumerate(['UL', 'UR', 'LR', 'LL']):
+            mean = np.mean(corner_dict[corner], axis=0) if corner_dict[corner] else None
+            if mean is not None:
+                x = int(mean[0]) + offset if i in [0, 3] else int(mean[0]) - offset
+                y = int(mean[1]) + offset if i in [0, 1] else int(mean[1]) - offset
+                self.corners[i] = (x, y)
 
         goal = (0, 0)
         # goal_arr = []
