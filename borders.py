@@ -74,7 +74,7 @@ class Borders:
                 x1, y1, x2, y2 = points[0]
                 # Draw the lines joining the points
                 # On the original image
-                #cv.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 # Maintain a simples lookup list for points
                 lines_list.append([(x1, y1), (x2, y2)])
 
@@ -114,22 +114,10 @@ class Borders:
 
                     if math.dist(x[1], y[1]) <= 15:
                         avg = np.mean([x[1], y[1]], axis=(0))
-                        #cv.circle(frame, (int(avg[0]), int(avg[1])), 5, (255, 0, 0), -1)
+                        self.check_point_in_cross(avg)
 
-                    if avg:
-                        if min_X > avg[0] or not min_X:
-                            min_X = avg[0]
-
-
-
-        if min_X:
-            cv.circle(frame, (int(min_X[0]), int(min_X[1])), 5, (255, 0, 0), -1)
-
-
-
-
-        #Tilføjede dette Yrray for at undgå IndexError: list index out of range.
-        avg_corners = [] * 4
+        for point in self.cross_array:
+            cv.circle(frame, (int(point[0]), int(point[1])), 5, (255, 0, 0), -1)
 
         meanUL = None
         meanUR = None
