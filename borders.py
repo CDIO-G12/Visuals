@@ -53,7 +53,7 @@ class Borders:
         # Use canny edge detection
         edges = cv.Canny(redEdges, 50, 150, apertureSize=3)
         # Apply HoughLinesP method to
-        # to directly obtain line end points
+        # directly obtain line end points
 
         lines_list = []
         lines = cv.HoughLinesP(
