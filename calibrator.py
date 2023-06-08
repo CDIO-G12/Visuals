@@ -103,8 +103,9 @@ if __name__ == '__main__':
     cap.release()
     cv.destroyAllWindows()
 
-    np.savetxt("settings.csv",
-               data,
-               delimiter=", ",
-               fmt='% s')
-    print("Saved 'settings.csv'")
+    if data != [(), (), ()]:
+        np.savetxt("settings.csv",
+                   data,
+                   delimiter=", ",
+                   fmt='% s')
+        print("Saved 'settings.csv'")

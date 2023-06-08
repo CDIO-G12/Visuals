@@ -132,7 +132,7 @@ class Borders:
         goal = (0, 0)
         # goal_arr = []
 
-        if meanLL is not None and meanLR is not None and meanUR is not None and meanUL is not None:
+        if meanLL is not None and meanUL is not None:
             holeL = (int(meanUL[0]), int((meanLL[1] - meanUL[1]) / 2 + meanUL[1]))
             goal = holeL
             # holeR = (int(meanUR[0]), int((meanLR[1] - meanUR[1]) / 2 + meanUR[1]))

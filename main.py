@@ -14,10 +14,6 @@ import utils as u
 import os
 import const as c
 
-
-
-
-
 wall_defined = True
 corner_defined = True
 
@@ -62,14 +58,16 @@ def emergency(pPoint, gPoint, area_border):
     else:
         return True
 
-
-
+ORIGINAL_WIDTH = c.WIDTH
+if c.CROP:
+    crop_width = c.WIDTH - c.CROP_AMOUNT
+    c.WIDTH -= c.CROP_AMOUNT * 2
 
 while True:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
             s.connect((c.HOST, c.PORT))
-        except ConnectionRefusedError:
+        except ConnectionRefusedError or TimeoutError:
             sleep(0.5)
             continue
         print("Got new connection!\n")
@@ -85,14 +83,14 @@ while True:
             exit()
 
         # Resolution
-        cap.set(cv.CAP_PROP_FRAME_WIDTH, c.WIDTH)
+        cap.set(cv.CAP_PROP_FRAME_WIDTH, ORIGINAL_WIDTH)
         cap.set(cv.CAP_PROP_FRAME_HEIGHT, c.HEIGHT)
         cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
 
         frame_width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
         frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
-        if not VIDEO and (frame_width != c.WIDTH or frame_height != c.HEIGHT):
-            print("Error: Wrong resolution, got: " + str(frame_width) + "x" + str(frame_height) + ", expected: " + str(c.WIDTH) + "x" + str(c.HEIGHT))
+        if not VIDEO and (frame_width != ORIGINAL_WIDTH or frame_height != c.HEIGHT):
+            print("Error: Wrong resolution, got: " + str(frame_width) + "x" + str(frame_height) + ", expected: " + str(ORIGINAL_WIDTH) + "x" + str(c.HEIGHT))
             exit()
 
         borderInstance = borders.Borders()
@@ -108,9 +106,6 @@ while True:
         else:
             out = cv.VideoWriter('video/output.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (c.WIDTH, c.HEIGHT))
 
-        if c.CROP:
-            crop_width = c.WIDTH - c.CROP_AMOUNT
-            c.WIDTH -= c.CROP_AMOUNT * 2
         while True:
             # Capture frame-by-frame
             ret, frame = cap.read()
@@ -139,8 +134,11 @@ while True:
             mask = cv.bitwise_not(cv.inRange(hsv, lower, upper))
             frame = cv.bitwise_and(frame, frame, mask=mask)
 
+
+            area_border = None
+
             if border_i <= 0:
-                border_i = 1
+                border_i = 10
                 corner_array, goal, cross_array = borderInstance.find_barriers(output, hsv)
                 if goal is not None:
                     cv.rectangle(output, (goal[0] - 2, goal[1] - 2), (goal[0] + 2, goal[1] + 2), (255, 255, 255), -1)
@@ -150,6 +148,11 @@ while True:
                 for point in cross_array:
                     if point is not None:
                         cv.circle(frame, (int(point[0]), int(point[1])), 5, (255, 0, 0), -1)
+
+                if all(corner_array):
+                    area_border = Polygon(corner_array)
+                    for x in corner_array:
+                        cv.circle(output, x, 5, (255, 0, 0), -1)
             else:
                 corner_array = None
                 cross_array = None
@@ -157,14 +160,9 @@ while True:
 
             border_i -= 1
 
-            area_border = None
 
-            if all(corner_array):
-                area_border = Polygon(corner_array)
-                for x in corner_array:
-                    cv.circle(output, x, 5, (255, 0, 0), -1)
             # detect circles in the image
-            temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 10, param1=75, param2=20, minRadius=10, maxRadius=40)
+            temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 15, param1=100, param2=25, minRadius=6, maxRadius=15)
             # ensure at least some circles were found
 
             #sleep(0.01)

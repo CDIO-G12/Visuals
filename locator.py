@@ -97,9 +97,12 @@ class Locator:
         i = -1
         for (x, y, r) in circles:
             i += 1
-            hue_avg = int(hsv[y-1][x-1][0]/4 + hsv[y][x-1][0]/4 + hsv[y-1][x][0]/4 + hsv[y][x][0]/4)
-            sat_avg = int(hsv[y-1][x-1][1]/4 + hsv[y][x-1][1]/4 + hsv[y-1][x][1]/4 + hsv[y][x][1]/4)
-            val_avg = int(hsv[y-1][x-1][2]/4 + hsv[y][x-1][2]/4 + hsv[y-1][x][2]/4 + hsv[y][x][2]/4)
+            try:
+                hue_avg = int(hsv[y-1][x-1][0]/4 + hsv[y][x-1][0]/4 + hsv[y-1][x][0]/4 + hsv[y][x][0]/4)
+                sat_avg = int(hsv[y-1][x-1][1]/4 + hsv[y][x-1][1]/4 + hsv[y-1][x][1]/4 + hsv[y][x][1]/4)
+                val_avg = int(hsv[y-1][x-1][2]/4 + hsv[y][x-1][2]/4 + hsv[y-1][x][2]/4 + hsv[y][x][2]/4)
+            except IndexError:
+                continue
             #print((x, y, r), (hue_avg, sat_avg, val_avg))
 
             if self.last_robot is not None:
@@ -154,9 +157,10 @@ class Locator:
             orange = best_ball[2]
             new_circles.remove(best_ball[2])
         robot = None
-        if best_ball[0] != (0, 0) and best_ball[1] != (0, 0) and is_close(best_ball[0], best_ball[1], 80):
+        if best_ball[0] != (0, 0) and best_ball[1] != (0, 0) and is_close(best_ball[0], best_ball[1], 200):
             robot = [best_ball[0], best_ball[1]]
-            robot = calculate_robot_position(hsv, robot)
+            if c.PERSPECTIVE_OFFSET:
+                robot = calculate_robot_position(hsv, robot)
 
         if best_ball[0] in new_circles:
             new_circles.remove(best_ball[0])
