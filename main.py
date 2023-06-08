@@ -91,7 +91,7 @@ while True:
 
         frame_width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
         frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
-        if frame_width != c.WIDTH or frame_height != c.HEIGHT:
+        if not VIDEO and (frame_width != c.WIDTH or frame_height != c.HEIGHT):
             print("Error: Wrong resolution, got: " + str(frame_width) + "x" + str(frame_height) + ", expected: " + str(c.WIDTH) + "x" + str(c.HEIGHT))
             exit()
 
@@ -107,9 +107,14 @@ while True:
             out = cv.VideoWriter('video/output-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
         else:
             out = cv.VideoWriter('video/output.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (c.WIDTH, c.HEIGHT))
+
+        crop_width = c.WIDTH-c.CROP_AMOUNT
+        c.WIDTH -= c.CROP_AMOUNT * 2
         while True:
             # Capture frame-by-frame
             ret, frame = cap.read()
+            if c.CROP:
+                frame = frame[:, c.CROP_AMOUNT:crop_width]
             # if frame is read correctly ret is True
             if not ret:
                 if VIDEO:
@@ -140,7 +145,6 @@ while True:
 
                 for x in corner_array:
                     cv.circle(output, x, 5, (255, 0, 0), -1)
-                    cv.imshow("output", frame)
                 for point in cross_array:
                     if point is not None:
                         cv.circle(frame, (int(point[0]), int(point[1])), 5, (255, 0, 0), -1)
@@ -157,9 +161,8 @@ while True:
                 area_border = Polygon(corner_array)
                 for x in corner_array:
                     cv.circle(output, x, 5, (255, 0, 0), -1)
-                    cv.imshow("output", frame)
             # detect circles in the image
-            temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 5, param1=75, param2=20, minRadius=2, maxRadius=14)
+            temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 10, param1=75, param2=20, minRadius=10, maxRadius=40)
             # ensure at least some circles were found
 
             #sleep(0.01)
@@ -173,11 +176,9 @@ while True:
 
             if temp_circles is not None and len(temp_circles) > 0:
                 circles, robot, orange = locator.locate(hsv, temp_circles, area_border)
-
-            # show the output image
-            # cv.imshow("output", np.hstack([frame, output]))
             else:
                 cv.imshow("output", gray)
+                continue
 
             if robot is not None and False:
                 robot_outline = l.make_robot_square(robot)

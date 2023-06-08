@@ -45,10 +45,10 @@ class Borders:
 
         resized = frame2
         # resized = cv.resize(resized, (512, 384))
-        cv.imshow("test", resized)
+        #cv.imshow("test", resized)
 
         resized = cv.resize(redEdges, (512, 384))
-        cv.imshow("test", resized)
+        #cv.imshow("test", resized)
 
         # Use canny edge detection
         edges = cv.Canny(redEdges, 50, 150, apertureSize=3)

@@ -3,7 +3,7 @@ STREAM = False
 RECORD = False
 VIDEO = False  # Set env variable 'SOURCE' to 'VIDEO' if camera is not connected
 
-draw_robot = False
+draw_robot = True
 
 VIDEOFILE = 'video/combined.mp4'
 CAMERASOURCE = 1
@@ -16,6 +16,9 @@ CAMERASOURCE = 1
 
 WIDTH = 1280
 HEIGHT = 720
+
+CROP = True
+CROP_AMOUNT = 100
 
 #HOST = "localhost"  # The server's hostname or IP address
 #HOST = "192.168.0.102"  # The server's hostname or IP address
