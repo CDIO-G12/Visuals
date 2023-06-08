@@ -4,8 +4,6 @@ import numpy as np
 import const as c
 from shapely.geometry import Point, Polygon
 
-import cv2 as cv
-
 PINK = 180
 GREEN = 50
 ORANGE = 20
@@ -57,15 +55,11 @@ def calculate_robot_position(frame, robot):
         dx = 0.70 * robot_height / np.tan(angle)
 
         p_help = (x_axis, robot[i][1])
-        print(p_help)
-        #cv.circle(frame, (int(p_help[0]), int(p_help[1])), 5, (40, 200, 120), -1)
-        #cv.imshow("output", frame)
         katete = getPixelDist([p_help, mid_point]) * pixel_ratio
         new_angle = np.arcsin(katete/hyp)
         y_diff = (np.sin(new_angle) * dx)/pixel_ratio
         x_diff = (np.cos(new_angle) * dx)/pixel_ratio
 
-        print(("green" if i == 1 else "pink"), " katete: ", katete, "xdiff: ", x_diff, "ydiff: ", y_diff)
         x_direction = -1 if robot[i][0] > x_axis else 1
         y_direction = -1 if robot[i][1] > y_axis else 1
         new_x = int(robot[i][0] + (x_direction * x_diff))

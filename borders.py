@@ -23,7 +23,7 @@ class Borders:
         if self.cross_array[3] is None or self.cross_array[3][1] < avg[1]:
             self.cross_array[3] = avg
 
-    def find_barriers(self, frame, hsv, width, height):
+    def find_barriers(self, frame, hsv):
         self.corners = [None] * 4
         self.cross_array = [None] * 4
         corner_LL_arr = []
