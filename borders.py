@@ -77,9 +77,9 @@ class Borders:
                 lines_list.append([(x1, y1), (x2, y2)])
 
         upper = 0.17*c.HEIGHT
-        left = 0.2*c.WIDTH
-        right = 0.89*c.WIDTH
         lower = 0.98*c.HEIGHT
+        left = 0.05*c.WIDTH
+        right = 0.95*c.WIDTH
         interval = 100
 
         for x in lines_list:
