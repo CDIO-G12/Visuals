@@ -103,7 +103,7 @@ while True:
 
 
         # Define the codec and create VideoWriter object.The output is stored in 'output.avi' file.
-        if RECORD:
+        if c.RECORD:
             out = cv.VideoWriter('video/output-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
         else:
             out = cv.VideoWriter('video/output.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (c.WIDTH, c.HEIGHT))
@@ -134,7 +134,7 @@ while True:
 
             if border_i <= 0:
                 border_i = 1
-                corner_array, goal, cross_array = borderInstance.find_barriers(output, hsv, WIDTH, HEIGHT)
+                corner_array, goal, cross_array = borderInstance.find_barriers(output, hsv)
                 if goal is not None:
                     cv.rectangle(output, (goal[0] - 2, goal[1] - 2), (goal[0] + 2, goal[1] + 2), (255, 255, 255), -1)
 

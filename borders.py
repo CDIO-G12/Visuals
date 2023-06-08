@@ -1,5 +1,5 @@
 import math
-
+import const as c
 import numpy as np
 import cv2 as cv
 
@@ -76,10 +76,10 @@ class Borders:
                 # Maintain a simples lookup list for points
                 lines_list.append([(x1, y1), (x2, y2)])
 
-        upper = 100
-        left = 200
-        right = 890
-        lower = 570
+        upper = 0.17*c.HEIGHT
+        left = 0.2*c.WIDTH
+        right = 0.89*c.WIDTH
+        lower = 0.98*c.HEIGHT
         interval = 100
 
         for x in lines_list:
@@ -101,8 +101,8 @@ class Borders:
                 elif left >= intersect[0] >= (left-interval) and lower >= intersect[1] >= (lower - interval):
                     corner_LL_arr.append((int(intersect[0]), int(intersect[1])))
 
-                if 0.7*width >= x[0][0] >= 0.3*width and 0.65*height >= x[0][1] >= 0.25*height \
-                        and 0.7*width >= y[0][0] >= 0.3*width and 0.65*height >= y[0][1] >= 0.25*height:
+                if 0.7*c.WIDTH >= x[0][0] >= 0.3*c.WIDTH and 0.65*c.HEIGHT >= x[0][1] >= 0.25*c.HEIGHT \
+                        and 0.7*c.WIDTH >= y[0][0] >= 0.3*c.WIDTH and 0.65*c.HEIGHT >= y[0][1] >= 0.25*c.HEIGHT:
 
                     points = {0: [x[0], y[0]], 1: [x[1], y[1]]}
                     for key, value in points.items():

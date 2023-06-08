@@ -1,7 +1,10 @@
 import argparse
 import math
 import numpy as np
+import const as c
 from shapely.geometry import Point, Polygon
+
+import cv2 as cv
 
 PINK = 180
 GREEN = 50
@@ -28,34 +31,46 @@ def read_settings():
         pass
 
 
-
-
 def calculate_robot_position(frame, robot):
     # Constants
     robot_dist_cm = 14.5  # cm distance between circles on robot
-    cam_height = 150  # Camera height in cm, from ground
+    cam_height = 148  # Camera height in cm, from ground
     robot_height = 12  # Robot height in cm, from ground
 
     # Calculate pixel ratio
     pixel_ratio = robot_dist_cm / getPixelDist(robot)
 
+    x_axis = c.WIDTH / 2
+    y_axis = c.HEIGHT / 2
+    mid_point = (x_axis, y_axis)
+
     # Calculate robot positions
     for i in range(2):
-        dist_from_cntr = getPixelDist([((len(frame[0]) // 2), (len(frame[1]) // 2)), robot[i]])
-        dist_from_cntr_cm = dist_from_cntr * pixel_ratio
-        angle = np.arctan(cam_height / dist_from_cntr_cm)
-        dx = cam_height / np.tan(angle)
-        x_direction = -1 if robot[i][0] > (len(frame[0]) // 2) else 1
-        y_direction = -1 if robot[i][1] > (len(frame[1]) // 2) else 1
-        new_x = int(robot[i][0] + (x_direction * dx))
-        new_y = int(robot[i][1] + (x_direction * dx))
+        hyp = getPixelDist([mid_point, robot[i]]) * pixel_ratio
+        angle = np.arctan(cam_height / hyp)
+        dx = 0.70 * robot_height / np.tan(angle)
+
+        p_help = (x_axis, robot[i][1])
+        print(p_help)
+        #cv.circle(frame, (int(p_help[0]), int(p_help[1])), 5, (40, 200, 120), -1)
+        #cv.imshow("output", frame)
+        katete = getPixelDist([p_help, mid_point]) * pixel_ratio
+        new_angle = np.arcsin(katete/hyp)
+        y_diff = (np.sin(new_angle) * dx)/pixel_ratio
+        x_diff = (np.cos(new_angle) * dx)/pixel_ratio
+
+        print(("green" if i == 1 else "pink"), " katete: ", katete, "xdiff: ", x_diff, "ydiff: ", y_diff)
+        x_direction = -1 if robot[i][0] > x_axis else 1
+        y_direction = -1 if robot[i][1] > y_axis else 1
+        new_x = int(robot[i][0] + (x_direction * x_diff))
+        new_y = int(robot[i][1] + (y_direction * y_diff))
         robot[i] = (new_x, new_y)
 
     return robot
 
+
 def make_robot_square(robot):
-    middlex, middley, mydegrees, dist = getAngleMidpointAndDist(robot)
-    mydegrees += 90
+    mydegrees = getAngle(robot) + 90
     gx = int(robot[1][0] + (100 * np.cos(mydegrees * np.pi / 180)))
     gy = int(robot[1][1] + (100 * np.sin(mydegrees * np.pi / 180)))
 
@@ -63,6 +78,7 @@ def make_robot_square(robot):
     py = int(robot[0][1] + (100 * np.sin(mydegrees * np.pi / 180)))
     coords = [robot[0], robot[1], (gx, gy), (px, py)]
     return coords
+
 
 class Locator:
     def __init__(self):
@@ -98,7 +114,6 @@ class Locator:
                 if not p.within(area_border):
                     continue
 
-            #print(hue_avg, sat_avg, val_avg, r)
             if val_avg < 150 or r < 6:
                 continue
 
@@ -126,7 +141,6 @@ class Locator:
         best_val = [9999, 9999, 9999]
 
         best_ball = [(0, 0), (0, 0), None]
-        #print(distances)
 
         for dist in distances:
             ball_type = dist[0]
@@ -141,7 +155,7 @@ class Locator:
         robot = None
         if best_ball[0] != (0, 0) and best_ball[1] != (0, 0) and is_close(best_ball[0], best_ball[1], 80):
             robot = [best_ball[0], best_ball[1]]
-            #robot = calculate_robot_position(hsv, robot)
+            robot = calculate_robot_position(hsv, robot)
 
         if best_ball[0] in new_circles:
             new_circles.remove(best_ball[0])
@@ -214,6 +228,12 @@ def getAngleMidpointAndDist(robot_pos):
     middley = int((robot_pos[0][1]+robot_pos[1][1])/2)
     dist = getPixelDist(robot_pos)
     return middlex, middley, mydegrees, dist
+
+
+def getAngle(robot_pos):
+    myradians = math.atan2(robot_pos[0][1] - robot_pos[1][1], robot_pos[0][0] - robot_pos[1][0])
+    return int(math.degrees(myradians))
+
 
 def getPixelDist(robot_pos):
     return math.sqrt(math.pow(robot_pos[0][0] - robot_pos[1][0], 2) + math.pow(robot_pos[0][1] - robot_pos[1][1], 2))
