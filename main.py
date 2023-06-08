@@ -108,8 +108,9 @@ while True:
         else:
             out = cv.VideoWriter('video/output.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (c.WIDTH, c.HEIGHT))
 
-        crop_width = c.WIDTH-c.CROP_AMOUNT
-        c.WIDTH -= c.CROP_AMOUNT * 2
+        if c.CROP:
+            crop_width = c.WIDTH-c.CROP_AMOUNT
+            c.WIDTH -= c.CROP_AMOUNT * 2
         while True:
             # Capture frame-by-frame
             ret, frame = cap.read()
