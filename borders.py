@@ -72,7 +72,7 @@ class Borders:
                 x1, y1, x2, y2 = points[0]
                 # Draw the lines joining the points
                 # On the original image
-                cv.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                #cv.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 # Maintain a simples lookup list for points
                 lines_list.append([(x1, y1), (x2, y2)])
 

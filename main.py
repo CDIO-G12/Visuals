@@ -12,16 +12,10 @@ import database as db
 import locator as l
 import utils as u
 import os
+import const as c
 
-STREAM = False
-RECORD = False
-VIDEO = False # Set env variable 'SOURCE' to 'VIDEO' if camera is not connected
-VIDEOFILE = 'video/output-20230607-090420.avi'
-CAMERASOURCE = 1
-#HOST = "localhost"  # The server's hostname or IP address
-#HOST = "192.168.0.102"  # The server's hostname or IP address
-HOST = "192.168.0.101"  # The Mark's hostname or IP address
-PORT = 8888  # The port used by the server
+
+
 
 
 wall_defined = True
@@ -35,11 +29,6 @@ ballOrder = []
 guideCorners = [(), (), (), ()]
 
 exclamation = False
-WHITE = 180
-
-WIDTH = 1024
-HEIGHT = 768
-
 # print line_intersection((A, B), (C, D))
 pixelDist = 0
 ballsToFind = 2
@@ -56,11 +45,12 @@ oldGoal = None
 
 print("Waiting on MiddleMan")
 source = os.environ.get("SOURCE")
+VIDEO = False
+CAMERASOURCE = c.CAMERASOURCE
 if source is not None:
     if source.lower() == "video":
         VIDEO = True
     else:
-        VIDEO = False
         CAMERASOURCE = int(source)
 
 
@@ -78,14 +68,14 @@ def emergency(pPoint, gPoint, area_border):
 while True:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
-            s.connect((HOST, PORT))
+            s.connect((c.HOST, c.PORT))
         except ConnectionRefusedError:
             sleep(0.5)
             continue
         print("Got new connection!\n")
 
-        if VIDEO:
-            cap = cv.VideoCapture(VIDEOFILE)
+        if c.VIDEO or VIDEO:
+            cap = cv.VideoCapture(c.VIDEOFILE)
         else:
             cap = cv.VideoCapture(CAMERASOURCE, cv.CAP_DSHOW)
 
@@ -95,9 +85,15 @@ while True:
             exit()
 
         # Resolution
-        cap.set(cv.CAP_PROP_FRAME_WIDTH, 1024)
-        cap.set(cv.CAP_PROP_FRAME_HEIGHT, 768)
+        cap.set(cv.CAP_PROP_FRAME_WIDTH, c.WIDTH)
+        cap.set(cv.CAP_PROP_FRAME_HEIGHT, c.HEIGHT)
         cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
+
+        frame_width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
+        frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
+        if frame_width != c.WIDTH or frame_height != c.HEIGHT:
+            print("Error: Wrong resolution, got: " + str(frame_width) + "x" + str(frame_height) + ", expected: " + str(c.WIDTH) + "x" + str(c.HEIGHT))
+            exit()
 
         borderInstance = borders.Borders()
         database = db.Database()
@@ -105,13 +101,12 @@ while True:
 
         circles_backup = []
 
-        frame_width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
-        frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
+
         # Define the codec and create VideoWriter object.The output is stored in 'output.avi' file.
         if RECORD:
             out = cv.VideoWriter('video/output-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
         else:
-            out = cv.VideoWriter('video/output.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
+            out = cv.VideoWriter('video/output.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (c.WIDTH, c.HEIGHT))
         while True:
             # Capture frame-by-frame
             ret, frame = cap.read()
@@ -157,13 +152,14 @@ while True:
             border_i -= 1
 
             area_border = None
-            if corner_array is not None and len(corner_array) > 3:
+
+            if all(corner_array):
                 area_border = Polygon(corner_array)
                 for x in corner_array:
                     cv.circle(output, x, 5, (255, 0, 0), -1)
                     cv.imshow("output", frame)
             # detect circles in the image
-            temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 5, param1=75, param2=20, minRadius=2, maxRadius=10)
+            temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 5, param1=75, param2=20, minRadius=2, maxRadius=14)
             # ensure at least some circles were found
 
             #sleep(0.01)
@@ -263,7 +259,7 @@ while True:
             # Write the frame into the file 'output.avi'
             #out.write(output)
 
-            if border_i == 9 and STREAM:
+            if border_i == 9 and c.STREAM:
                 resized = cv.resize(output, (512, 384))
                 _, img_encoded = cv.imencode(".jpg", resized)
                 u.send(s, img_encoded.tobytes(), False)

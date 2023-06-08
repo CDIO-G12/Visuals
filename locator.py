@@ -32,8 +32,8 @@ def read_settings():
 
 def calculate_robot_position(frame, robot):
     # Constants
-    robot_dist_cm = 15.5  # cm distance between circles on robot
-    cam_height = 155  # Camera height in cm, from ground
+    robot_dist_cm = 14.5  # cm distance between circles on robot
+    cam_height = 150  # Camera height in cm, from ground
     robot_height = 12  # Robot height in cm, from ground
 
     # Calculate pixel ratio
@@ -51,49 +51,6 @@ def calculate_robot_position(frame, robot):
         new_y = int(robot[i][1] + (x_direction * dx))
         robot[i] = (new_x, new_y)
 
-
-    """
-    dist = getPixelDist(robot)  # pixel distance between circles on robot
-    robot_dist_cm = 15.5  # cm distance between circles on robot
-    cam_height = 155  # Camera height in cm, from ground. Defined as some constant
-    robot_height = 12  # Robot height in cm, from ground. Defined as some constant
-
-    # calculate factor to convert pixels to cm
-    pixel_ratio = robot_dist_cm/dist
-
-    x_mid = int(len(frame[0]) / 2)
-    y_mid = int(len(frame[1]) / 2)
-
-    cntr = (int(len(frame[0]) / 2), int(len(frame[1]) / 2)) # center of frame in pixels
-    dist_from_cntr = getPixelDist([cntr, robot[0]]) # distance from center of frame to robot in pixels
-    dist_from_cntr_cm = dist_from_cntr * pixel_ratio
-    angle = np.arctan(cam_height/dist_from_cntr_cm)
-    dx1 = cam_height/np.tan(angle)
-
-    dist_from_cntr = getPixelDist([cntr, robot[1]])  # distance from center of frame to robot in pixels
-    dist_from_cntr_cm = dist_from_cntr * pixel_ratio
-    angle = np.arctan(cam_height / dist_from_cntr_cm)
-    dx2 = cam_height / np.tan(angle)
-
-    if robot[0][0] >= x_mid:
-        robot[0][0] -= dx1
-    elif robot[0][0] <= x_mid:
-        robot[0][0] += dx1
-    if robot[0][1] >= y_mid:
-        robot[0][1] -= dx1
-    elif robot[0][1] <= y_mid:
-        robot[0][1] += dx1
-
-    if robot[1][0] >= x_mid:
-        robot[1][0] -= dx2
-    elif robot[1][0] <= x_mid:
-        robot[1][0] += dx2
-    if robot[0][1] >= y_mid:
-        robot[1][1] -= dx2
-    elif robot[1][1] <= y_mid:
-        robot[1][1] += dx2
-
-    """
     return robot
 
 def make_robot_square(robot):
