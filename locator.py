@@ -9,15 +9,20 @@ import cv2 as cv
 PINK = 180
 GREEN = 50
 ORANGE = 20
+MIN_SAT = 50
 
 def read_settings():
-    global PINK, GREEN, ORANGE
+    global PINK, GREEN, ORANGE, MIN_SAT
 
     try:
         arr = np.loadtxt("settings.csv",
                          delimiter=",", dtype=int)
+        sat = 200
         i = 0
         for line in arr:
+            if line[1] < sat:
+                sat = line[1]
+
             if i == 0:
                 PINK = line[0]
             elif i == 1:
@@ -26,6 +31,7 @@ def read_settings():
                 ORANGE = line[0]
                 break
             i += 1
+        MIN_SAT = sat - 10
         print("Got PGO values from Settings.csv")
     except FileNotFoundError:
         pass
@@ -119,11 +125,11 @@ class Locator:
 
             new_circles.append((x, y))
 
-            if sat_avg < 50:
+            if sat_avg < MIN_SAT:
                 continue
 
-            p_dist = hsv_distance_from_hue(hue_avg, PINK) + ((255-sat_avg)/100)
-            g_dist = hsv_distance_from_hue(hue_avg, GREEN) + ((255-sat_avg)/100)
+            p_dist = hsv_distance_from_hue(hue_avg, PINK) + ((255-sat_avg)/10)
+            g_dist = hsv_distance_from_hue(hue_avg, GREEN) + ((255-sat_avg)/10)
             if find_orange is True:
                 o_dist = hsv_distance_from_hue(hue_avg, ORANGE) + ((255-sat_avg)/10)
             else:
@@ -141,6 +147,7 @@ class Locator:
         best_val = [9999, 9999, 9999]
 
         best_ball = [(0, 0), (0, 0), None]
+        #print(distances)
 
         for dist in distances:
             ball_type = dist[0]
