@@ -1,5 +1,6 @@
 import cv2 as cv
 import numpy as np
+import const as c
 
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
@@ -40,17 +41,21 @@ if __name__ == '__main__':
         exit()
 
     # Resolution
-    cap.set(cv.CAP_PROP_FRAME_WIDTH, 1024)
-    cap.set(cv.CAP_PROP_FRAME_HEIGHT, 768)
+    cap.set(cv.CAP_PROP_FRAME_WIDTH, c.WIDTH)
+    cap.set(cv.CAP_PROP_FRAME_HEIGHT, c.HEIGHT)
     cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
     cv.namedWindow('output')
     cv.setMouseCallback('output', mouse_press)
 
     print("Started.\nPress Pink ball.")
 
+    if c.CROP:
+        crop_width = c.WIDTH - c.CROP_AMOUNT
+        c.WIDTH -= c.CROP_AMOUNT * 2
     while True:
         # Capture frame-by-frame
         ret, frame = cap.read()
+
         # if frame is read correctly ret is True
         if not ret:
             if VIDEO:
@@ -59,8 +64,15 @@ if __name__ == '__main__':
             print("Can't receive frame (stream end?). Exiting ...")
             exit()
 
+        if c.CROP:
+            frame = frame[:, c.CROP_AMOUNT:crop_width]
+
         hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
-        cv.imshow("output", frame)
+
+        cv.line(frame, (0, 0), (c.WIDTH, c.HEIGHT), (200, 200, 200), 2)
+        cv.line(frame, (0, c.HEIGHT), (c.WIDTH, 0), (200, 200, 200), 2)
+
+        cv.imshow("output", np.hstack([frame]))
 
         if cv.waitKey(1) == ord('q'):
             break

@@ -109,13 +109,11 @@ while True:
             out = cv.VideoWriter('video/output.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (c.WIDTH, c.HEIGHT))
 
         if c.CROP:
-            crop_width = c.WIDTH-c.CROP_AMOUNT
+            crop_width = c.WIDTH - c.CROP_AMOUNT
             c.WIDTH -= c.CROP_AMOUNT * 2
         while True:
             # Capture frame-by-frame
             ret, frame = cap.read()
-            if c.CROP:
-                frame = frame[:, c.CROP_AMOUNT:crop_width]
             # if frame is read correctly ret is True
             if not ret:
                 if VIDEO:
@@ -123,6 +121,9 @@ while True:
                     continue
                 print("Can't receive frame (stream end?). Exiting ...")
                 exit()
+
+            if c.CROP:
+                frame = frame[:, c.CROP_AMOUNT:crop_width]
 
             # Our operations on the frame come here
             hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
