@@ -10,6 +10,9 @@ new = False
 state = 0
 data = [(), (), ()]
 
+VIDEO = False # Set to true if camera not connected
+VIDEOFILE = 'video/combined.mp4'
+
 def mouse_press(event, x, y, flags, param):
     global mouseX, mouseY, new
     if event == cv.EVENT_LBUTTONDOWN:
@@ -22,8 +25,6 @@ def avg_hsv(hsv, x, y):
     val_avg = int(hsv[y - 1][x - 1][2] / 4 + hsv[y][x - 1][2] / 4 + hsv[y - 1][x][2] / 4 + hsv[y][x][2] / 4)
     return (hue_avg, sat_avg, val_avg)
 
-VIDEO = False # Set to true if camera not connected
-VIDEOFILE = 'video/combined.mp4'
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -31,7 +32,7 @@ if __name__ == '__main__':
     if VIDEO:
         cap = cv.VideoCapture(VIDEOFILE)
     else:
-        cap = cv.VideoCapture(1, cv.CAP_DSHOW)
+        cap = cv.VideoCapture(2, cv.CAP_DSHOW)
 
     if not cap.isOpened():
         print("Cannot open camera")
@@ -66,7 +67,12 @@ if __name__ == '__main__':
 
         if new:
             new = False
-            data[state] = (avg_hsv(hsv, mouseX, mouseY))
+            avg = avg_hsv(hsv, mouseX, mouseY)
+            if avg[1] < 50:
+                print("Please try again..")
+                continue
+
+            data[state] = (avg)
             if state == 0:
                 print("Found pink at: x %d, y &d - hsv:" % mouseX, mouseY, avg_hsv(hsv, mouseX, mouseY))
                 print("\nPlease find green")
