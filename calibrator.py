@@ -2,10 +2,7 @@ import cv2 as cv
 import numpy as np
 import const as c
 import locator as l
-from statistics import median
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+import os
 
 mouseX = None
 mouseY = None
@@ -14,8 +11,20 @@ state = 0
 data = [(), (), ()]
 
 # Set to true if camera not connected
+
+
 VIDEO = False
 VIDEOFILE = 'video/combined.mp4'
+
+# Getting correct camera source
+source = os.environ.get("SOURCE")
+VIDEO = False
+CAMERASOURCE = c.CAMERASOURCE
+if source is not None:
+    if source.lower() == "video":
+        VIDEO = True
+    else:
+        CAMERASOURCE = int(source)
 
 # Determine mouse position
 def mouse_press(event, x, y, flags, param):
@@ -52,7 +61,7 @@ if __name__ == '__main__':
     if VIDEO:
         cap = cv.VideoCapture(VIDEOFILE)
     else:
-        cap = cv.VideoCapture(2, cv.CAP_DSHOW)
+        cap = cv.VideoCapture(CAMERASOURCE, cv.CAP_DSHOW)
 
     if not cap.isOpened():
         print("Cannot open camera")
