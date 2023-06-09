@@ -4,7 +4,7 @@ import cv2 as cv
 import locator as l
 import const as c
 
-
+# Init databese
 class Database:
     def __init__(self):
         self.balls = []
@@ -15,6 +15,7 @@ class Database:
         self.robot_square = []
         self.oldGoal = None
 
+    # Check position of balls, robot, orange, corners, crosses and goal and send to MM (MiddleMan).
     def check_and_send(self, s, balls, robot, orange, corner_array, cross_array, goal):
 
         if self.robot is not robot and robot is not None:
@@ -76,9 +77,6 @@ class Database:
         return True
 
     def highlight(self, frame):
-
-        #cv.rectangle(frame, (pos[0] - 40, pos[1] - 40), (pos[0] + 70, pos[1] + 40), (255, 255, 255), 2)
-        #cv.rectangle(frame, (pos[0] - 50, pos[1] - 50), (pos[0] + 50, pos[1] + 50), (255, 255, 255), 2)
 
         if self.orange is not None and self.orange != (0, 0):
             cv.circle(frame, self.orange, 3, (0, 0, 0), 2)

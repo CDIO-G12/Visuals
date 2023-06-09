@@ -9,6 +9,7 @@ class Borders:
         self.corners = [] * 4
         self.cross_array = [] * 4
 
+# Determine position of the cross in the middle of the field.
     def check_point_in_cross(self, avg):
         # min X
         if self.cross_array[0] is None or self.cross_array[0][0] > avg[0]:
@@ -23,6 +24,7 @@ class Borders:
         if self.cross_array[3] is None or self.cross_array[3][1] < avg[1]:
             self.cross_array[3] = avg
 
+    # # calculate the position of the barriers.
     def find_barriers(self, frame, hsv):
         self.corners = [None] * 4
         self.cross_array = [None] * 4
@@ -31,6 +33,7 @@ class Borders:
         corner_UL_arr = []
         corner_UR_arr = []
 
+        #Initialize the upper and lower boundaries of the "orange" in the HSV color space
         lower = np.array([0, 120, 50], dtype="uint8")
         upper = np.array([10, 255, 255], dtype="uint8")
         mask1 = cv.inRange(hsv, lower, upper)
@@ -76,8 +79,9 @@ class Borders:
                 # Maintain a simples lookup list for points
                 lines_list.append([(x1, y1), (x2, y2)])
 
-        upper = 0.17*c.HEIGHT
-        lower = 0.98*c.HEIGHT
+        # Detmine offsets
+        upper = 0.025*c.HEIGHT
+        lower = 1*c.HEIGHT
         left = 0.05*c.WIDTH
         right = 0.95*c.WIDTH
         interval = 100
@@ -129,6 +133,7 @@ class Borders:
                 y = int(mean[1]) + offset if i in [0, 1] else int(mean[1]) - offset
                 self.corners[i] = (x, y)
 
+        # Calculate the position of the goal.
         goal = (0, 0)
         # goal_arr = []
 

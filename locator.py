@@ -34,7 +34,7 @@ def read_settings():
     except FileNotFoundError:
         pass
 
-
+# Calculate the position of the robot.
 def calculate_robot_position(frame, robot):
     # Constants
     robot_dist_cm = 14.5  # cm distance between circles on robot
@@ -68,7 +68,7 @@ def calculate_robot_position(frame, robot):
 
     return robot
 
-
+# Draw the square around the robot. Effectively works as a bounding box for the robot.
 def make_robot_square(robot):
     mydegrees = getAngle(robot) + 90
     gx = int(robot[1][0] + (100 * np.cos(mydegrees * np.pi / 180)))
@@ -225,7 +225,7 @@ def is_robot_right(hsv):
     #print(hsv)
     return (green - threshold_range) < hsv[0] < (green + threshold_range) and hsv[1] > 60 and hsv[2] > 127
 
-
+# Calculate the angle and position of the robot based on the position of the balls
 def getAngleMidpointAndDist(robot_pos):
     myradians = math.atan2(robot_pos[0][1]-robot_pos[1][1], robot_pos[0][0]-robot_pos[1][0])
     mydegrees = int(math.degrees(myradians))
@@ -234,19 +234,20 @@ def getAngleMidpointAndDist(robot_pos):
     dist = getPixelDist(robot_pos)
     return middlex, middley, mydegrees, dist
 
-
+# Calculate angle.
 def getAngle(robot_pos):
     myradians = math.atan2(robot_pos[0][1] - robot_pos[1][1], robot_pos[0][0] - robot_pos[1][0])
     return int(math.degrees(myradians))
 
-
+# Calculate distance between two points in pixels.
 def getPixelDist(robot_pos):
     return math.sqrt(math.pow(robot_pos[0][0] - robot_pos[1][0], 2) + math.pow(robot_pos[0][1] - robot_pos[1][1], 2))
 
+# Check if the robot is in the correct position.
 def is_robot(frame):
-    #print(frame)
     return frame[0] < 160 and frame[1] > 180 and frame[2] > 230
 
+# See if point1 is close to point2
 def is_close(point1, point2, thresh = 5):
     x = abs(point1[0] - point2[0])
     y = abs(point1[1] - point2[1])

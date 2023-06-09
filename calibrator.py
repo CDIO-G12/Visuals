@@ -11,15 +11,18 @@ new = False
 state = 0
 data = [(), (), ()]
 
-VIDEO = False # Set to true if camera not connected
+# Set to true if camera not connected
+VIDEO = False
 VIDEOFILE = 'video/combined.mp4'
 
+# Determine mouse position
 def mouse_press(event, x, y, flags, param):
     global mouseX, mouseY, new
     if event == cv.EVENT_LBUTTONDOWN:
         mouseX, mouseY = x, y
         new = True
 
+# Calculate average HSV value of a pixel and its neighbours.
 def avg_hsv(hsv, x, y):
     hue_avg = int(hsv[y - 1][x - 1][0] / 4 + hsv[y][x - 1][0] / 4 + hsv[y - 1][x][0] / 4 + hsv[y][x][0] / 4)
     sat_avg = int(hsv[y - 1][x - 1][1] / 4 + hsv[y][x - 1][1] / 4 + hsv[y - 1][x][1] / 4 + hsv[y][x][1] / 4)
@@ -33,7 +36,7 @@ if __name__ == '__main__':
     if VIDEO:
         cap = cv.VideoCapture(VIDEOFILE)
     else:
-        cap = cv.VideoCapture(2, cv.CAP_DSHOW)
+        cap = cv.VideoCapture(1, cv.CAP_DSHOW)
 
     if not cap.isOpened():
         print("Cannot open camera")
@@ -97,7 +100,6 @@ if __name__ == '__main__':
             else:
                 break
             state += 1
-
 
     # When everything done, release the capture
     cap.release()

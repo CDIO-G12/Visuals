@@ -87,6 +87,7 @@ while True:
         cap.set(cv.CAP_PROP_FRAME_HEIGHT, c.HEIGHT)
         cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
 
+        # Frame
         frame_width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
         frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
         if not VIDEO and (frame_width != ORIGINAL_WIDTH or frame_height != c.HEIGHT):
@@ -96,9 +97,6 @@ while True:
         borderInstance = borders.Borders()
         database = db.Database()
         locator = l.Locator()
-
-        circles_backup = []
-
 
         # Define the codec and create VideoWriter object.The output is stored in 'output.avi' file.
         if c.RECORD:
@@ -137,10 +135,11 @@ while True:
 
             area_border = None
 
+            # Determines how often we detect borders and cross, every 'x' amount of frame
             if border_i <= 0:
-                border_i = 10
-                corner_array, goal, cross_array = borderInstance.find_barriers(output, hsv)
-                if goal is not None:
+                border_i = 1    # resets counter until next detection
+                corner_array, goal, cross_array = borderInstance.find_barriers(output, hsv)  # call to bordersclass
+                if goal is not None:  # show goal if found
                     cv.rectangle(output, (goal[0] - 2, goal[1] - 2), (goal[0] + 2, goal[1] + 2), (255, 255, 255), -1)
 
                 for x in corner_array:
@@ -158,15 +157,12 @@ while True:
                 cross_array = None
                 goal = None
 
-            border_i -= 1
-
+            border_i -= 1 # decrement counter for checking borders...
 
             # detect circles in the image
             temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 15, param1=100, param2=25, minRadius=6, maxRadius=15)
+
             # ensure at least some circles were found
-
-            #sleep(0.01)
-
             found_robot = [False, False]
             robot_l_r = [[0, 0], [0, 0]]
 
@@ -193,12 +189,14 @@ while True:
             if circles is None:
                 continue
 
+            # send data to middleman.
             success = database.check_and_send(s, circles, robot, orange, corner_array, cross_array, goal)
             if not success:
                 break
             database.highlight(output)
 
-            data = u.check_data(s)  # read from middleman
+            # read from middleman
+            data = u.check_data(s)
             if data is not None:
                 first = True
                 spl = data.decode().split("\n")
@@ -253,8 +251,6 @@ while True:
                 cv.line(output, guideCorners[2], guideCorners[3], (200, 200, 200), 1)
                 cv.line(output, guideCorners[3], guideCorners[0], (200, 200, 200), 1)
 
-
-
             cv.imshow("output", np.hstack([output]))
 
             # Write the frame into the file 'output.avi'
@@ -265,10 +261,7 @@ while True:
                 _, img_encoded = cv.imencode(".jpg", resized)
                 u.send(s, img_encoded.tobytes(), False)
 
-            #cv.imshow("gray", gray)
-
             # Display the resulting frame
-            #cv.imshow('frame', gray)
             k = cv.waitKey(1)
             if k == ord('q'):
                 exit(0)
