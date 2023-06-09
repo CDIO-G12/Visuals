@@ -90,6 +90,26 @@ def make_robot_square(robot):
     return coords
 
 
+
+def calculate_average_hue(hue_values):
+    sum_angle = 0
+    count = 0
+
+    for hue in hue_values:
+        angle = (hue * 2) * (2 * math.pi) / 360
+        sum_angle += angle
+        count += 1
+
+    average_angle = sum_angle / count
+    average_hue = average_angle * 360 / (2 * math.pi)
+
+    if average_hue < 0:
+        average_hue += 360
+    elif average_hue >= 360:
+        average_hue -= 360
+
+    return int(average_hue/2)
+
 class Locator:
     def __init__(self):
         self.balancer = 0
@@ -109,11 +129,12 @@ class Locator:
             i += 1
 
             hue_avg, sat_avg, val_avg = 0, 0, 0
+            hues = []
             try:
                 ky = -1
                 for kx in [-1, 0, 1, -1, 0, 1, -1, 0, 1]:
                     j = 0
-                    hue_avg += int(hsv[y + ky][x + kx][j] / 9)
+                    hues.append(hsv[y + ky][x + kx][j])
                     j += 1
                     sat_avg += int(hsv[y + ky][x + kx][j] / 9)
                     j += 1
@@ -123,6 +144,7 @@ class Locator:
                         ky += 1
             except IndexError:
                 continue
+            hue_avg = calculate_average_hue(hues)
 
             print((x, y, r), (hue_avg, sat_avg, val_avg))
 

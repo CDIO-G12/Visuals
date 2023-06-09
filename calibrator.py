@@ -1,6 +1,7 @@
 import cv2 as cv
 import numpy as np
 import const as c
+import locator as l
 from statistics import median
 
 # Press Shift+F10 to execute it or replace it with your code.
@@ -26,11 +27,12 @@ def mouse_press(event, x, y, flags, param):
 # Calculate average HSV value of a pixel and its neighbours.
 def avg_hsv(hsv, x, y):
     hue_avg, sat_avg, val_avg = 0, 0, 0
+    hues = []
     try:
         ky = -1
         for kx in [-1, 0, 1, -1, 0, 1, -1, 0, 1]:
             j = 0
-            hue_avg += int(hsv[y + ky][x + kx][j] / 9)
+            hues.append(hsv[y + ky][x + kx][j])
             j += 1
             sat_avg += int(hsv[y + ky][x + kx][j] / 9)
             j += 1
@@ -40,6 +42,7 @@ def avg_hsv(hsv, x, y):
                 ky += 1
     except IndexError:
         return None, None, None
+    hue_avg = int(l.calculate_average_hue(hues))
     return hue_avg, sat_avg, val_avg
 
 
