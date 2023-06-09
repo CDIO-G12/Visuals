@@ -14,32 +14,26 @@ import utils as u
 import os
 import const as c
 
-wall_defined = True
-corner_defined = True
 
+# booleans
+exclamation = False
+
+# arrays from class borders
 corner_array = []
 cross_array = []
 
+# arrays from class locator
 drawPoints = []
 ballOrder = []
 guideCorners = [(), (), (), ()]
 
-exclamation = False
-# print line_intersection((A, B), (C, D))
-pixelDist = 0
-ballsToFind = 2
-countBalls = 0
-saturation = 5
-edges_sent = False
-ballFound = True
-lastHsvNumber = 0
-oldOrange = (0, 0)
+# variable to keep track of how often we calculate borders and middle cross
 border_i = 0
-dump_frame = 1
-oldGoal = None
 
 
 print("Waiting on MiddleMan")
+
+# Getting correct camera source
 source = os.environ.get("SOURCE")
 VIDEO = False
 CAMERASOURCE = c.CAMERASOURCE
@@ -50,6 +44,7 @@ if source is not None:
         CAMERASOURCE = int(source)
 
 
+# funktion to check if robot is outside of border, returns true if robot is outside.
 def emergency(pPoint, gPoint, area_border):
     p1 = Point(pPoint)
     p2 = Point(gPoint)
@@ -58,12 +53,16 @@ def emergency(pPoint, gPoint, area_border):
     else:
         return True
 
+# Crop funktion to crop the sides off the video
 ORIGINAL_WIDTH = c.WIDTH
-if c.CROP:
+if c.CROP:  # check boolean
+    # calculate new width
     crop_width = c.WIDTH - c.CROP_AMOUNT
     c.WIDTH -= c.CROP_AMOUNT * 2
 
+# Main loop
 while True:
+    # Connecting to middle man
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         try:
             s.connect((c.HOST, c.PORT))
@@ -72,11 +71,13 @@ while True:
             continue
         print("Got new connection!\n")
 
+        # If statement to decide wether to use a videofile or live camera
         if c.VIDEO or VIDEO:
             cap = cv.VideoCapture(c.VIDEOFILE)
         else:
             cap = cv.VideoCapture(CAMERASOURCE, cv.CAP_DSHOW)
 
+        # Error handling for opening camera
         if not cap.isOpened():
             print("Cannot open camera")
             cap.release()
@@ -90,16 +91,20 @@ while True:
         # Frame
         frame_width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
         frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
+
+        # If expected resolution does not match actual resolution of camera, would effect calculations
         if not VIDEO and (frame_width != ORIGINAL_WIDTH or frame_height != c.HEIGHT):
             print("Error: Wrong resolution, got: " + str(frame_width) + "x" + str(frame_height) + ", expected: " + str(ORIGINAL_WIDTH) + "x" + str(c.HEIGHT))
             exit()
 
+        # Creating instances of other classes
         borderInstance = borders.Borders()
         database = db.Database()
         locator = l.Locator()
 
         # Define the codec and create VideoWriter object.The output is stored in 'output.avi' file.
         if c.RECORD:
+            # Using datetime to create unique file names
             out = cv.VideoWriter('video/output-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
         else:
             out = cv.VideoWriter('video/output.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (c.WIDTH, c.HEIGHT))
@@ -110,12 +115,12 @@ while True:
             # if frame is read correctly ret is True
             if not ret:
                 if VIDEO:
-                    cap.set(cv.CAP_PROP_POS_FRAMES, 0)  # this make the video loop
+                    cap.set(cv.CAP_PROP_POS_FRAMES, 0)  # this make the video loop, sets frame to 0
                     continue
                 print("Can't receive frame (stream end?). Exiting ...")
                 exit()
 
-            if c.CROP:
+            if c.CROP:  # Changes frams resolution to cropped resolution
                 frame = frame[:, c.CROP_AMOUNT:crop_width]
 
             # Our operations on the frame come here
@@ -127,11 +132,11 @@ while True:
             out.write(output)
 
             picFrame = frame
+            # define colour borders for our mask
             lower = np.array([0, 0, 0], dtype="uint8")
             upper = np.array([255, 255, 180], dtype="uint8")
             mask = cv.bitwise_not(cv.inRange(hsv, lower, upper))
             frame = cv.bitwise_and(frame, frame, mask=mask)
-
 
             area_border = None
 
@@ -142,17 +147,16 @@ while True:
                 if goal is not None:  # show goal if found
                     cv.rectangle(output, (goal[0] - 2, goal[1] - 2), (goal[0] + 2, goal[1] + 2), (255, 255, 255), -1)
 
-                for x in corner_array:
+                for x in corner_array:  # show corners found
                     cv.circle(output, x, 5, (255, 0, 0), -1)
-                for point in cross_array:
-                    if point is not None:
-                        cv.circle(frame, (int(point[0]), int(point[1])), 5, (255, 0, 0), -1)
 
-                if all(corner_array):
+                for point in cross_array:  # show cross points found
+                    if point is not None:
+                        cv.circle(output, (int(point[0]), int(point[1])), 5, (255, 0, 0), -1)
+
+                if all(corner_array):  # if 4 corners are found we create a polygon to use for checking.
                     area_border = Polygon(corner_array)
-                    for x in corner_array:
-                        cv.circle(output, x, 5, (255, 0, 0), -1)
-            else:
+            else:   # else set all to None so that we ignore them
                 corner_array = None
                 cross_array = None
                 goal = None
@@ -166,16 +170,18 @@ while True:
             found_robot = [False, False]
             robot_l_r = [[0, 0], [0, 0]]
 
+            # booleans for circles
             orange = None
             robot = None
             circles = None
 
+            # checks if we have found any circles
             if temp_circles is not None and len(temp_circles) > 0:
                 circles, robot, orange = locator.locate(hsv, temp_circles, area_border)
             else:
                 cv.imshow("output", gray)
                 continue
-
+            
             if robot is not None and False:
                 robot_outline = l.make_robot_square(robot)
                 if emergency(robot_outline[2], robot_outline[3], area_border) and not exclamation:
@@ -186,6 +192,7 @@ while True:
                     exclamation = False
                     print("good to go")
 
+            cv.imshow("output", gray)
             if circles is None:
                 continue
 
