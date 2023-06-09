@@ -128,6 +128,7 @@ class Borders:
 
         return self.corners, goal, self.cross_array
 
+ 
 # Function to find the intersection of two lines.
 def line_intersection(line1, line2):
     xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])

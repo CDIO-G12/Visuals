@@ -11,6 +11,7 @@ ORANGE = 20
 MIN_SAT = 50
 MIN_VAL = 75
 
+
 def read_settings():
     global PINK, GREEN, ORANGE, MIN_SAT, MIN_VAL
 
@@ -47,12 +48,13 @@ def read_settings():
     except FileNotFoundError:
         pass
 
+
 # Calculate the position of the robot.
-def calculate_robot_position(frame, robot):
+def calculate_robot_position(robot):
     # Constants
     robot_dist_cm = 18.5  # cm distance between circles on robot
     cam_height = 148  # Camera height in cm, from ground
-    robot_height = 11.5  # Robot height in cm, from ground
+    robot_height = 9.5  # Robot height in cm, from ground
 
     # Calculate pixel ratio
     pixel_ratio = robot_dist_cm / getPixelDist(robot)
@@ -149,7 +151,7 @@ class Locator:
                 continue
             hue_avg = calculate_average_hue(hues)
 
-            print((x, y, r), (hue_avg, sat_avg, val_avg))
+            # print((x, y, r), (hue_avg, sat_avg, val_avg))
 
             if self.last_robot is not None:
                 coords = make_robot_square(self.last_robot)
@@ -158,7 +160,7 @@ class Locator:
                 if p.within(poly):
                     continue
 
-            if area_border:
+            if area_border is not None:
                 p = Point(x, y)
                 if not p.within(area_border):
                     continue

@@ -162,7 +162,7 @@ while True:
                 cross_array = None
                 goal = None
 
-            border_i -= 1 # decrement counter for checking borders...
+            border_i -= 1  # decrement counter for checking borders...
 
             # detect circles in the image
             temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 15, param1=100, param2=25, minRadius=6, maxRadius=15)
@@ -182,9 +182,12 @@ while True:
             else:
                 cv.imshow("output", gray)
                 continue
-            
-            if robot is not None and False:
-                robot_outline = l.make_robot_square(robot)
+
+            # Check if robot is inside our borders
+            if robot is not None and not [(0, 0), (0, 0)] and False:  # only check if currently have some coordinates
+                robot_outline = l.make_robot_square(robot)  # Calculating outline of robot
+
+                # If statement only prints once everytime robot goes outside borders.
                 if emergency(robot_outline[2], robot_outline[3], area_border) and not exclamation:
                     exclamation = True
                     u.send(s, '!')
