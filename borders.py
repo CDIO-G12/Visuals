@@ -33,6 +33,7 @@ class Borders:
         corner_UL_arr = []
         corner_UR_arr = []
 
+        #frame = cv.medianBlur(frame, 11)
         #Initialize the upper and lower boundaries of the "orange" in the HSV color space
         lower = np.array([0, 120, 50], dtype="uint8")
         upper = np.array([10, 255, 255], dtype="uint8")
@@ -58,7 +59,7 @@ class Borders:
             np.pi / 180,  # Angle resolution in radians
             threshold=30,  # Min number of votes for valid line
             minLineLength=5,  # Min allowed length of line
-            maxLineGap=40  # Max allowed gap between line for joining them
+            maxLineGap=40 # Max allowed gap between line for joining them
         )
 
         if lines is not None:
@@ -75,12 +76,12 @@ class Borders:
         # Detmine offsets
         upper = 0.025*c.HEIGHT
         lower = 1*c.HEIGHT
-        left = 0.05*c.WIDTH
+        left = 0.025*c.WIDTH
         right = 0.98*c.WIDTH
         interval = 50
         offset = 20
 
-        # Where border lines intersect, draw edges.
+        # Where borderlines intersect, draw edges.
         for x in lines_list:
             for y in lines_list:
                 if y == x:
