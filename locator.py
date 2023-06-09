@@ -2,24 +2,29 @@ import argparse
 import math
 import numpy as np
 import const as c
+from statistics import median
 from shapely.geometry import Point, Polygon
 
 PINK = 180
 GREEN = 50
 ORANGE = 20
 MIN_SAT = 50
+MIN_VAL = 75
 
 def read_settings():
-    global PINK, GREEN, ORANGE, MIN_SAT
+    global PINK, GREEN, ORANGE, MIN_SAT, MIN_VAL
 
     try:
         arr = np.loadtxt("settings.csv",
                          delimiter=",", dtype=int)
         sat = 200
+        val = 200
         i = 0
         for line in arr:
             if line[1] < sat:
                 sat = line[1]
+            if line[2] < val:
+                val = line[2]
 
             if i == 0:
                 PINK = line[0]
@@ -29,7 +34,12 @@ def read_settings():
                 ORANGE = line[0]
                 break
             i += 1
-        MIN_SAT = sat - 10
+        MIN_SAT = sat - 15
+        if MIN_SAT < 50:
+            MIN_SAT = 50
+        MIN_VAL = val - 15
+        if MIN_VAL < 50:
+            MIN_VAL = 50
         print("Got PGO values from Settings.csv")
     except FileNotFoundError:
         pass
@@ -97,13 +107,24 @@ class Locator:
         i = -1
         for (x, y, r) in circles:
             i += 1
+
+            hue_avg, sat_avg, val_avg = 0, 0, 0
             try:
-                hue_avg = int(hsv[y-1][x-1][0]/4 + hsv[y][x-1][0]/4 + hsv[y-1][x][0]/4 + hsv[y][x][0]/4)
-                sat_avg = int(hsv[y-1][x-1][1]/4 + hsv[y][x-1][1]/4 + hsv[y-1][x][1]/4 + hsv[y][x][1]/4)
-                val_avg = int(hsv[y-1][x-1][2]/4 + hsv[y][x-1][2]/4 + hsv[y-1][x][2]/4 + hsv[y][x][2]/4)
+                ky = -1
+                for kx in [-1, 0, 1, -1, 0, 1, -1, 0, 1]:
+                    j = 0
+                    hue_avg += int(hsv[y + ky][x + kx][j] / 9)
+                    j += 1
+                    sat_avg += int(hsv[y + ky][x + kx][j] / 9)
+                    j += 1
+                    val_avg += int(hsv[y + ky][x + kx][j] / 9)
+
+                    if kx == 1:
+                        ky += 1
             except IndexError:
                 continue
-            #print((x, y, r), (hue_avg, sat_avg, val_avg))
+
+            print((x, y, r), (hue_avg, sat_avg, val_avg))
 
             if self.last_robot is not None:
                 coords = make_robot_square(self.last_robot)
@@ -117,7 +138,7 @@ class Locator:
                 if not p.within(area_border):
                     continue
 
-            if val_avg < 150 or r < 6:
+            if val_avg < 70 or r < 7:
                 continue
 
             new_circles.append((x, y))
@@ -157,7 +178,7 @@ class Locator:
             orange = best_ball[2]
             new_circles.remove(best_ball[2])
         robot = None
-        if best_ball[0] != (0, 0) and best_ball[1] != (0, 0) and is_close(best_ball[0], best_ball[1], 200):
+        if best_ball[0] != (0, 0) and best_ball[1] != (0, 0) and is_close(best_ball[0], best_ball[1], 300):
             robot = [best_ball[0], best_ball[1]]
             if c.PERSPECTIVE_OFFSET:
                 robot = calculate_robot_position(hsv, robot)

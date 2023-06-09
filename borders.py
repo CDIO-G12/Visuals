@@ -69,7 +69,7 @@ class Borders:
                 x1, y1, x2, y2 = points[0]
                 # Draw the lines joining the points
                 # On the original image
-                cv.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                #cv.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 # Maintain a simples lookup list for points
                 lines_list.append([(x1, y1), (x2, y2)])
 
@@ -124,7 +124,7 @@ class Borders:
         if self.corners[0] is not None and self.corners[3] is not None:
             holeL = (int(self.corners[0][0]), int((self.corners[3][1] - self.corners[0][1]) / 2 + self.corners[0][1]))
             goal = holeL
-            print(self.corners[0], self.corners[3], goal)
+            #print(self.corners[0], self.corners[3], goal)
 
         return self.corners, goal, self.cross_array
 

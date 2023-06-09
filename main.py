@@ -142,7 +142,7 @@ while True:
 
             # Determines how often we detect borders and cross, every 'x' amount of frame
             if border_i <= 0:
-                border_i = 1    # resets counter until next detection
+                border_i = 10    # resets counter until next detection
                 corner_array, goal, cross_array = borderInstance.find_barriers(output, hsv)  # call to bordersclass
                 if goal is not None:  # show goal if found
                     cv.rectangle(output, (goal[0] - 2, goal[1] - 2), (goal[0] + 2, goal[1] + 2), (255, 255, 255), -1)

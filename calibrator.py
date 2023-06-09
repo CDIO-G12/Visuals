@@ -1,6 +1,7 @@
 import cv2 as cv
 import numpy as np
 import const as c
+from statistics import median
 
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
@@ -24,10 +25,22 @@ def mouse_press(event, x, y, flags, param):
 
 # Calculate average HSV value of a pixel and its neighbours.
 def avg_hsv(hsv, x, y):
-    hue_avg = int(hsv[y - 1][x - 1][0] / 4 + hsv[y][x - 1][0] / 4 + hsv[y - 1][x][0] / 4 + hsv[y][x][0] / 4)
-    sat_avg = int(hsv[y - 1][x - 1][1] / 4 + hsv[y][x - 1][1] / 4 + hsv[y - 1][x][1] / 4 + hsv[y][x][1] / 4)
-    val_avg = int(hsv[y - 1][x - 1][2] / 4 + hsv[y][x - 1][2] / 4 + hsv[y - 1][x][2] / 4 + hsv[y][x][2] / 4)
-    return (hue_avg, sat_avg, val_avg)
+    hue_avg, sat_avg, val_avg = 0, 0, 0
+    try:
+        ky = -1
+        for kx in [-1, 0, 1, -1, 0, 1, -1, 0, 1]:
+            j = 0
+            hue_avg += int(hsv[y + ky][x + kx][j] / 9)
+            j += 1
+            sat_avg += int(hsv[y + ky][x + kx][j] / 9)
+            j += 1
+            val_avg += int(hsv[y + ky][x + kx][j] / 9)
+
+            if kx == 1:
+                ky += 1
+    except IndexError:
+        return None, None, None
+    return hue_avg, sat_avg, val_avg
 
 
 # Press the green button in the gutter to run the script.
@@ -36,7 +49,7 @@ if __name__ == '__main__':
     if VIDEO:
         cap = cv.VideoCapture(VIDEOFILE)
     else:
-        cap = cv.VideoCapture(1, cv.CAP_DSHOW)
+        cap = cv.VideoCapture(2, cv.CAP_DSHOW)
 
     if not cap.isOpened():
         print("Cannot open camera")
