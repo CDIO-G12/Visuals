@@ -34,12 +34,15 @@ def read_settings():
                 ORANGE = line[0]
                 break
             i += 1
-        MIN_SAT = sat - 15
+        MIN_SAT = int(sat*0.7)
         if MIN_SAT < 50:
             MIN_SAT = 50
-        MIN_VAL = val - 15
+        MIN_VAL = int(val*0.7)
         if MIN_VAL < 50:
             MIN_VAL = 50
+
+        MIN_VAL = 100
+        MIN_SAT = 50
         print("Got PGO values from Settings.csv")
     except FileNotFoundError:
         pass
@@ -47,9 +50,9 @@ def read_settings():
 # Calculate the position of the robot.
 def calculate_robot_position(frame, robot):
     # Constants
-    robot_dist_cm = 14.5  # cm distance between circles on robot
+    robot_dist_cm = 18.5  # cm distance between circles on robot
     cam_height = 148  # Camera height in cm, from ground
-    robot_height = 12  # Robot height in cm, from ground
+    robot_height = 11.5  # Robot height in cm, from ground
 
     # Calculate pixel ratio
     pixel_ratio = robot_dist_cm / getPixelDist(robot)
