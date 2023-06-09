@@ -74,6 +74,7 @@ while True:
         # If statement to decide wether to use a videofile or live camera
         if c.VIDEO or VIDEO:
             cap = cv.VideoCapture(c.VIDEOFILE)
+            c.CROP = False
         else:
             cap = cv.VideoCapture(CAMERASOURCE, cv.CAP_DSHOW)
 
