@@ -30,6 +30,7 @@ class Database:
                 if not success:
                     return False
 
+        # Send balls to MM
         if not np.array_equal(self.balls, balls):
             self.balls = balls
             success = u.send(s, "b/r/r")
@@ -43,6 +44,7 @@ class Database:
             if not success:
                 return False
 
+        # Send orange to MM
         if self.orange != orange:
             self.orange = orange
             if orange is not None:
@@ -76,6 +78,7 @@ class Database:
 
         return True
 
+    # Highlight balls, robot, orange, corners, crosses and goal.
     def highlight(self, frame):
 
         if self.orange is not None and self.orange != (0, 0):

@@ -59,7 +59,7 @@ class Borders:
             np.pi / 180,  # Angle resolution in radians
             threshold=30,  # Min number of votes for valid line
             minLineLength=5,  # Min allowed length of line
-            maxLineGap=40 # Max allowed gap between line for joining them
+            maxLineGap=40  # Max allowed gap between line for joining them
         )
 
         if lines is not None:
@@ -69,11 +69,11 @@ class Borders:
                 x1, y1, x2, y2 = points[0]
                 # Draw the lines joining the points
                 # On the original image
-                #cv.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 # Maintain a simples lookup list for points
                 lines_list.append([(x1, y1), (x2, y2)])
 
-        # Detmine offsets
+        # Determine offsets
         upper = 0.025*c.HEIGHT
         lower = 1*c.HEIGHT
         left = 0.025*c.WIDTH
@@ -128,6 +128,7 @@ class Borders:
 
         return self.corners, goal, self.cross_array
 
+ 
 # Function to find the intersection of two lines.
 def line_intersection(line1, line2):
     xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])

@@ -76,7 +76,6 @@ while True:
 
         # If statement to decide wether to use a videofile or live camera
         if c.VIDEO or VIDEO:
-            print("video")
             cap = cv.VideoCapture(c.VIDEOFILE)
             c.CROP = False
         else:
@@ -106,7 +105,7 @@ while True:
         borderInstance = borders.Borders()
         database = db.Database()
         locator = l.Locator()
-        
+
         # Define the codec and create VideoWriter object.The output is stored in 'output.avi' file.
         if c.RECORD:
             # Using datetime to create unique file names
@@ -125,13 +124,14 @@ while True:
                 print("Can't receive frame (stream end?). Exiting ...")
                 exit()
 
-            if c.CROP:  # Changes frams resolution to cropped resolution
+            if c.CROP:  # Changes frames resolution to cropped resolution
                 frame = frame[:, c.CROP_AMOUNT:crop_width]
 
             # Our operations on the frame come here
             hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
             gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-            gray = cv.medianBlur(gray, 5)
+            kernel = np.ones((5, 5), np.uint8)
+            gray = cv.medianBlur(gray, 11)
 
             output = frame.copy()
             out.write(output)
@@ -165,8 +165,7 @@ while True:
                 corner_array = None
                 cross_array = None
                 goal = None
-
-            border_i -= 1 # decrement counter for checking borders...
+            border_i -= 1  # decrement counter for checking borders...
 
             # detect circles in the image
             temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 15, param1=100, param2=25, minRadius=6, maxRadius=15)
@@ -186,9 +185,12 @@ while True:
             else:
                 #cv.imshow("output", gray)
                 continue
-            
-            if robot is not None and False:
-                robot_outline = l.make_robot_square(robot)
+
+            # Check if robot is inside our borders
+            if robot is not None and not [(0, 0), (0, 0)] and False:  # only check if currently have some coordinates
+                robot_outline = l.make_robot_square(robot)  # Calculating outline of robot
+
+                # If statement only prints once everytime robot goes outside borders.
                 if emergency(robot_outline[2], robot_outline[3], area_border) and not exclamation:
                     exclamation = True
                     u.send(s, '!')
@@ -197,7 +199,6 @@ while True:
                     exclamation = False
                     print("good to go")
 
-            #cv.imshow("output", gray)
             if circles is None:
                 continue
 
@@ -214,9 +215,10 @@ while True:
                 spl = data.decode().split("\n")
                 for parts in spl:
 
-                    innerSplit = parts.split("/")
+                    innerSplit = parts.split("/")  # Segments messages into parts, seperated by '/'
 
                     try:
+                        # Check to see if a ball is present or not.
                         if innerSplit[0] == "check" and len(innerSplit) > 2:
                             innerSplit = [int(i) for i in innerSplit[1:]]
                             if u.check_for_ball(hsv[innerSplit[1]][innerSplit[2]]):
@@ -225,6 +227,7 @@ while True:
                                 u.send(s, "f/f/0")
                             continue
 
+                        # Send ball order to middleman.
                         if innerSplit[0] == "b" and len(innerSplit) > 2:
                             if first:
                                 ballOrder = []
@@ -233,10 +236,12 @@ while True:
                             ballOrder.append((innerSplit[0], (innerSplit[1], innerSplit[2] + 15)))
                             continue
 
+                        # Send guide corners to middleman.
                         if innerSplit[0] == "gc" and len(innerSplit) > 3:
                             innerSplit = [int(i) for i in innerSplit[1:]]
                             guideCorners[innerSplit[0]] = (innerSplit[1], innerSplit[2])
 
+                        # Draw square highlighting of balls.
                         if len(innerSplit) < 5:
                             continue
                         if first:
@@ -248,6 +253,7 @@ while True:
                     except ValueError or IndexError:
                         pass
 
+            # Draw square around target balls.
             if drawPoints is not None and drawPoints is not []:
                 for point in drawPoints:
                     cv.rectangle(output, (point[0] - 10, point[1] - 10), (point[0] + 10, point[1] + 10), point[2], 1)
@@ -268,6 +274,7 @@ while True:
             # Write the frame into the file 'output.avi'
             #out.write(output)
 
+            # Compress output and send stream to middleman.
             if border_i == 9 and c.STREAM:
                 resized = cv.resize(output, (512, 384))
                 _, img_encoded = cv.imencode(".jpg", resized)
@@ -276,6 +283,7 @@ while True:
             # Display the resulting frame
             cv.imshow("output", output)
 
+            # Functionality for closing program and saving frames.
             k = cv.waitKey(1)
             if k == ord('q'):
                 exit(0)
@@ -293,7 +301,5 @@ while True:
 
     # When everything done, release the capture
     cap.release()
-
-    cv.destroyAllWindows()
 
 
