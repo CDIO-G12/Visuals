@@ -60,6 +60,9 @@ if c.CROP:  # check boolean
     crop_width = c.WIDTH - c.CROP_AMOUNT
     c.WIDTH -= c.CROP_AMOUNT * 2
 
+
+cv.namedWindow('output')
+
 # Main loop
 while True:
     # Connecting to middle man
@@ -73,6 +76,7 @@ while True:
 
         # If statement to decide wether to use a videofile or live camera
         if c.VIDEO or VIDEO:
+            print("video")
             cap = cv.VideoCapture(c.VIDEOFILE)
             c.CROP = False
         else:
@@ -102,7 +106,7 @@ while True:
         borderInstance = borders.Borders()
         database = db.Database()
         locator = l.Locator()
-
+        
         # Define the codec and create VideoWriter object.The output is stored in 'output.avi' file.
         if c.RECORD:
             # Using datetime to create unique file names
@@ -180,7 +184,7 @@ while True:
             if temp_circles is not None and len(temp_circles) > 0:
                 circles, robot, orange = locator.locate(hsv, temp_circles, area_border)
             else:
-                cv.imshow("output", gray)
+                #cv.imshow("output", gray)
                 continue
             
             if robot is not None and False:
@@ -193,7 +197,7 @@ while True:
                     exclamation = False
                     print("good to go")
 
-            cv.imshow("output", gray)
+            #cv.imshow("output", gray)
             if circles is None:
                 continue
 
@@ -259,7 +263,7 @@ while True:
                 cv.line(output, guideCorners[2], guideCorners[3], (200, 200, 200), 1)
                 cv.line(output, guideCorners[3], guideCorners[0], (200, 200, 200), 1)
 
-            cv.imshow("output", np.hstack([output]))
+
 
             # Write the frame into the file 'output.avi'
             #out.write(output)
@@ -270,6 +274,8 @@ while True:
                 u.send(s, img_encoded.tobytes(), False)
 
             # Display the resulting frame
+            cv.imshow("output", output)
+
             k = cv.waitKey(1)
             if k == ord('q'):
                 exit(0)
@@ -278,9 +284,11 @@ while True:
                 img_name = "opencv_frame_{}.png".format(1)
                 cv.imwrite(img_name, picFrame)
                 print("{} written!".format(img_name))
+
         s.close()
         print("Lost connection.")
 
+        cv.destroyAllWindows()
         out.release()
 
     # When everything done, release the capture
