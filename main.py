@@ -162,7 +162,6 @@ while True:
                 corner_array = None
                 cross_array = None
                 goal = None
-
             border_i -= 1  # decrement counter for checking borders...
 
             # detect circles in the image
@@ -253,10 +252,12 @@ while True:
                     except ValueError or IndexError:
                         pass
 
+            # Draw square around target balls.
             if drawPoints is not None and drawPoints is not []:
                 for point in drawPoints:
                     cv.rectangle(output, (point[0] - 10, point[1] - 10), (point[0] + 10, point[1] + 10), point[2], 1)
 
+            # Draw number next to balls, to indicate order in which they are to be picked up.
             if ballOrder is not None and ballOrder is not []:
                 for ball in ballOrder:
                     cv.putText(output, str(ball[0]), ball[1], cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2,

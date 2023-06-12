@@ -96,7 +96,6 @@ def make_robot_square(robot):
     return coords
 
 
-
 def calculate_average_hue(hue_values):
     sum_angle = 0
     count = 0
@@ -116,6 +115,7 @@ def calculate_average_hue(hue_values):
 
     return int(average_hue/2)
 
+
 class Locator:
     def __init__(self):
         self.balancer = 0
@@ -127,7 +127,7 @@ class Locator:
 
     def locate(self, hsv, circles, area_border, find_orange=True, ball_count=10):
         distances = ([])
-        circles = np.round(circles[0, :]).astype("int")
+        circles = np.round(circles[0, :]).astype("int")  # convert circles to ints
         new_circles = []
 
         i = -1
@@ -137,6 +137,7 @@ class Locator:
 
             hue_avg, sat_avg, val_avg = 0, 0, 0
             hues = []
+            # Loop through all pixels in the circle
             try:
                 ky = -1
                 for kx in [-1, 0, 1, -1, 0, 1, -1, 0, 1]:
@@ -151,7 +152,7 @@ class Locator:
                         ky += 1
             except IndexError:
                 continue
-            hue_avg = calculate_average_hue(hues)
+            hue_avg = calculate_average_hue(hues)  # calculate average hue for the circle
 
             # print((x, y, r), (hue_avg, sat_avg, val_avg))
 
@@ -163,16 +164,20 @@ class Locator:
                 if p.within(poly):
                     continue
 
+            # Determine if a ball is seen outside borders
             if area_border is not None:
                 p = Point(x, y)
                 if not p.within(area_border):
                     continue
 
+            # Determine if circle is not a ball
             if val_avg < 70 or r < 7:
                 continue
 
+            # Circle found
             new_circles.append((x, y))
 
+            # White ball found
             if sat_avg < MIN_SAT:
                 continue
 
@@ -180,12 +185,14 @@ class Locator:
             # ball is the best match for the different coloured balls
             p_dist = hsv_distance_from_hue(hue_avg, PINK) + ((255-sat_avg)/10)
             g_dist = hsv_distance_from_hue(hue_avg, GREEN) + ((255-sat_avg)/10)
-            if find_orange is True:
+            if find_orange:  # If we have not found an orange ball yet
                 o_dist = hsv_distance_from_hue(hue_avg, ORANGE) + ((255-sat_avg)/10)
             else:
                 o_dist = 9999
 
+            # Calculating which dist is smallest, so that we can determine which colour it fits best
             m = min(p_dist, g_dist, o_dist)
+            # Appends to list with index based on the colour it fits the best
             if m == p_dist:
                 distances.append((0, m, (x, y)))
             elif m == g_dist:
@@ -197,7 +204,6 @@ class Locator:
         best_val = [9999, 9999, 9999]
 
         best_ball = [(0, 0), (0, 0), None]
-        #print(distances)
 
         for dist in distances:
             ball_type = dist[0]
@@ -259,15 +265,18 @@ class Locator:
 
         return True
 
+
 # Determine whether two points are close enough to be considered the same.
 def hsv_distance_from_hue(hsv_hue, hue):
     dist = min(abs(hsv_hue - hue), abs(hsv_hue - (hue - 180)))
     return dist
 
+
 # Determine whether ball is white.
 def is_ball(hsv, sat):
     #print(hsv)
     return hsv[1] < 20 and hsv[2] > 200
+
 
 # Determine whether ball is orange.
 def is_orange_ball(hsv):
@@ -275,11 +284,13 @@ def is_orange_ball(hsv):
     orange = 30
     return (orange - threshold_range) < hsv[0] < (orange + threshold_range) and hsv[1] > 50 and hsv[2] > 150
 
+
 # Track position of pink guide circle.
 def is_robot_left(hsv):
     threshold_range = 10
     pink = 160
     return (pink - threshold_range) < hsv[0] < (pink + threshold_range) and hsv[1] > 80 and hsv[2] > 127
+
 
 # Track position of green guide circle.
 def is_robot_right(hsv):
@@ -287,6 +298,7 @@ def is_robot_right(hsv):
     green = 82
     #print(hsv)
     return (green - threshold_range) < hsv[0] < (green + threshold_range) and hsv[1] > 60 and hsv[2] > 127
+
 
 # Calculate the angle and position of the robot based on the position of the balls
 def getAngleMidpointAndDist(robot_pos):
@@ -297,18 +309,22 @@ def getAngleMidpointAndDist(robot_pos):
     dist = getPixelDist(robot_pos)
     return middlex, middley, mydegrees, dist
 
+
 # Calculate angle.
-def getAngle(robot_pos):
-    myradians = math.atan2(robot_pos[0][1] - robot_pos[1][1], robot_pos[0][0] - robot_pos[1][0])
+def getAngle(point_array):
+    myradians = math.atan2(point_array[0][1] - point_array[1][1], point_array[0][0] - point_array[1][0])
     return int(math.degrees(myradians))
+
 
 # Calculate distance between two points in pixels.
 def getPixelDist(robot_pos):
     return math.sqrt(math.pow(robot_pos[0][0] - robot_pos[1][0], 2) + math.pow(robot_pos[0][1] - robot_pos[1][1], 2))
 
+
 # Check if the robot is in the correct position.
 def is_robot(frame):
     return frame[0] < 160 and frame[1] > 180 and frame[2] > 230
+
 
 # See if point1 is close to point2
 def is_close(point1, point2, thresh = 5):
