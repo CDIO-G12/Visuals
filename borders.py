@@ -73,7 +73,7 @@ class Borders:
                 # Maintain a simples lookup list for points
                 lines_list.append([(x1, y1), (x2, y2)])
 
-        # Detmine offsets
+        # Determine offsets
         upper = 0.025*c.HEIGHT
         lower = 1*c.HEIGHT
         left = 0.025*c.WIDTH

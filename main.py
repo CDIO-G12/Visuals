@@ -93,7 +93,7 @@ while True:
         frame_width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
         frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
 
-        # If expected resolution does not match actual resolution of camera, would effect calculations
+        # If expected resolution does not match actual resolution of camera, would affect calculations
         if not VIDEO and (frame_width != ORIGINAL_WIDTH or frame_height != c.HEIGHT):
             print("Error: Wrong resolution, got: " + str(frame_width) + "x" + str(frame_height) + ", expected: " + str(ORIGINAL_WIDTH) + "x" + str(c.HEIGHT))
             exit()
@@ -121,13 +121,14 @@ while True:
                 print("Can't receive frame (stream end?). Exiting ...")
                 exit()
 
-            if c.CROP:  # Changes frams resolution to cropped resolution
+            if c.CROP:  # Changes frames resolution to cropped resolution
                 frame = frame[:, c.CROP_AMOUNT:crop_width]
 
             # Our operations on the frame come here
             hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
             gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-            gray = cv.medianBlur(gray, 5)
+            kernel = np.ones((5, 5), np.uint8)
+            gray = cv.medianBlur(gray, 11)
 
             output = frame.copy()
             out.write(output)
@@ -143,7 +144,7 @@ while True:
 
             # Determines how often we detect borders and cross, every 'x' amount of frame
             if border_i <= 0:
-                border_i = 10    # resets counter until next detection
+                border_i = 1    # resets counter until next detection
                 corner_array, goal, cross_array = borderInstance.find_barriers(output, hsv)  # call to bordersclass
                 if goal is not None:  # show goal if found
                     cv.rectangle(output, (goal[0] - 2, goal[1] - 2), (goal[0] + 2, goal[1] + 2), (255, 255, 255), -1)
@@ -196,6 +197,7 @@ while True:
                     exclamation = False
                     print("good to go")
 
+            # Output image.
             cv.imshow("output", gray)
             if circles is None:
                 continue
@@ -213,9 +215,10 @@ while True:
                 spl = data.decode().split("\n")
                 for parts in spl:
 
-                    innerSplit = parts.split("/")
+                    innerSplit = parts.split("/")  # Segments messages into parts, seperated by '/'
 
                     try:
+                        # Check to see if a ball is present or not.
                         if innerSplit[0] == "check" and len(innerSplit) > 2:
                             innerSplit = [int(i) for i in innerSplit[1:]]
                             if u.check_for_ball(hsv[innerSplit[1]][innerSplit[2]]):
@@ -224,6 +227,7 @@ while True:
                                 u.send(s, "f/f/0")
                             continue
 
+                        # Send ball order to middleman.
                         if innerSplit[0] == "b" and len(innerSplit) > 2:
                             if first:
                                 ballOrder = []
@@ -232,10 +236,12 @@ while True:
                             ballOrder.append((innerSplit[0], (innerSplit[1], innerSplit[2] + 15)))
                             continue
 
+                        # Send guide corners to middleman.
                         if innerSplit[0] == "gc" and len(innerSplit) > 3:
                             innerSplit = [int(i) for i in innerSplit[1:]]
                             guideCorners[innerSplit[0]] = (innerSplit[1], innerSplit[2])
 
+                        # Draw square highlighting of balls.
                         if len(innerSplit) < 5:
                             continue
                         if first:
@@ -256,6 +262,7 @@ while True:
                     cv.putText(output, str(ball[0]), ball[1], cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2,
                                cv.LINE_AA)
 
+            # Draw guide corners.
             if len(guideCorners) == 4 and guideCorners[0] != ():
                 cv.line(output, guideCorners[0], guideCorners[1], (200, 200, 200), 1)
                 cv.line(output, guideCorners[1], guideCorners[2], (200, 200, 200), 1)
@@ -267,12 +274,13 @@ while True:
             # Write the frame into the file 'output.avi'
             #out.write(output)
 
+            # Compress output and send stream to middleman.
             if border_i == 9 and c.STREAM:
                 resized = cv.resize(output, (512, 384))
                 _, img_encoded = cv.imencode(".jpg", resized)
                 u.send(s, img_encoded.tobytes(), False)
 
-            # Display the resulting frame
+            # Functionality for closing program and saving frames.
             k = cv.waitKey(1)
             if k == ord('q'):
                 exit(0)
@@ -288,7 +296,6 @@ while True:
 
     # When everything done, release the capture
     cap.release()
-
     cv.destroyAllWindows()
 
 

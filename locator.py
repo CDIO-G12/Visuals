@@ -11,7 +11,7 @@ ORANGE = 20
 MIN_SAT = 50
 MIN_VAL = 75
 
-
+# Function to get settings values from our calibrator.
 def read_settings():
     global PINK, GREEN, ORANGE, MIN_SAT, MIN_VAL
 
@@ -59,6 +59,7 @@ def calculate_robot_position(robot):
     # Calculate pixel ratio
     pixel_ratio = robot_dist_cm / getPixelDist(robot)
 
+    # Calculate mid point
     x_axis = c.WIDTH / 2
     y_axis = c.HEIGHT / 2
     mid_point = (x_axis, y_axis)
@@ -130,6 +131,7 @@ class Locator:
         new_circles = []
 
         i = -1
+        # Loop through all circles
         for (x, y, r) in circles:
             i += 1
 
@@ -153,6 +155,7 @@ class Locator:
 
             # print((x, y, r), (hue_avg, sat_avg, val_avg))
 
+            # Determine if a ball has been seen inside the robot
             if self.last_robot is not None:
                 coords = make_robot_square(self.last_robot)
                 poly = Polygon(coords)
@@ -173,6 +176,8 @@ class Locator:
             if sat_avg < MIN_SAT:
                 continue
 
+            # Calculate distance to the different colours, effectively determining which
+            # ball is the best match for the different coloured balls
             p_dist = hsv_distance_from_hue(hue_avg, PINK) + ((255-sat_avg)/10)
             g_dist = hsv_distance_from_hue(hue_avg, GREEN) + ((255-sat_avg)/10)
             if find_orange is True:
@@ -201,14 +206,19 @@ class Locator:
                 best_ball[ball_type] = dist[2]
 
         orange = (0, 0)
+
+        # Determine the best candidate for the orange ball
         if find_orange and best_ball[2] is not None:
             orange = best_ball[2]
             new_circles.remove(best_ball[2])
         robot = None
+
+        # Calculate the best candidates for the pink and green ball, and calculate the robot position
+        # with respect to perspective distortion.
         if best_ball[0] != (0, 0) and best_ball[1] != (0, 0) and is_close(best_ball[0], best_ball[1], 300):
             robot = [best_ball[0], best_ball[1]]
             if c.PERSPECTIVE_OFFSET:
-                robot = calculate_robot_position(hsv, robot)
+                robot = calculate_robot_position(robot)
 
         if best_ball[0] in new_circles:
             new_circles.remove(best_ball[0])
@@ -231,6 +241,8 @@ class Locator:
 
         return self.export, robot, orange
 
+    # Determine whether the new circles are close enough to the old circles
+    # to be considered the same.
     def balls_close_enough(self, new_circles):
         if self.best is None:
             return True
@@ -247,26 +259,29 @@ class Locator:
 
         return True
 
+# Determine whether two points are close enough to be considered the same.
 def hsv_distance_from_hue(hsv_hue, hue):
     dist = min(abs(hsv_hue - hue), abs(hsv_hue - (hue - 180)))
     return dist
 
+# Determine whether ball is white.
 def is_ball(hsv, sat):
     #print(hsv)
     return hsv[1] < 20 and hsv[2] > 200
 
+# Determine whether ball is orange.
 def is_orange_ball(hsv):
     threshold_range = 20
     orange = 30
     return (orange - threshold_range) < hsv[0] < (orange + threshold_range) and hsv[1] > 50 and hsv[2] > 150
 
-# pink
+# Track position of pink guide circle.
 def is_robot_left(hsv):
     threshold_range = 10
     pink = 160
     return (pink - threshold_range) < hsv[0] < (pink + threshold_range) and hsv[1] > 80 and hsv[2] > 127
 
-# green
+# Track position of green guide circle.
 def is_robot_right(hsv):
     threshold_range = 20
     green = 82
