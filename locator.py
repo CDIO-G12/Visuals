@@ -42,7 +42,7 @@ def read_settings():
         if MIN_VAL < 50:
             MIN_VAL = 50
 
-        MIN_VAL = 100
+        MIN_VAL = 75
         MIN_SAT = 50
         print("Got PGO values from Settings.csv")
     except FileNotFoundError:
@@ -154,7 +154,11 @@ class Locator:
                 continue
             hue_avg = calculate_average_hue(hues)  # calculate average hue for the circle
 
-            # print((x, y, r), (hue_avg, sat_avg, val_avg))
+            print((x, y, r), (hue_avg, sat_avg, val_avg))
+
+            # Determine if circle is not a ball
+            if val_avg < 70 or r < 7:
+                continue
 
             # Determine if a ball has been seen inside the robot
             if self.last_robot is not None:
@@ -168,11 +172,8 @@ class Locator:
             if area_border is not None:
                 p = Point(x, y)
                 if not p.within(area_border):
-                    continue
-
-            # Determine if circle is not a ball
-            if val_avg < 70 or r < 7:
-                continue
+                    pass
+                    #continue
 
             # Circle found
             new_circles.append((x, y))
@@ -236,7 +237,7 @@ class Locator:
         else:
             self.balancer = 0
 
-        if self.balancer > 2:
+        if self.balancer > 24:
             self.circles = new_circles
             self.export = new_circles
 

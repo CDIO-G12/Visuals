@@ -73,7 +73,7 @@ class Database:
             for corner in cross_array:
                 if corner is None:
                     continue
-                u.send(s, "c/%d/%d/%d" % (counter, corner[0], corner[1]))
+                u.send(s, "m/%d/%d/%d" % (counter, corner[0], corner[1]))
                 counter += 1
 
         return True

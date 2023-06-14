@@ -109,9 +109,9 @@ while True:
         # Define the codec and create VideoWriter object.The output is stored in 'output.avi' file.
         if c.RECORD:
             # Using datetime to create unique file names
-            out = cv.VideoWriter('video/output-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
+            out = cv.VideoWriter('recordings/output-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
         else:
-            out = cv.VideoWriter('video/output.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (c.WIDTH, c.HEIGHT))
+            out = cv.VideoWriter('recordings/output.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (c.WIDTH, c.HEIGHT))
 
         while True:
             # Capture frame-by-frame
@@ -168,7 +168,7 @@ while True:
             border_i -= 1  # decrement counter for checking borders...
 
             # detect circles in the image
-            temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 15, param1=100, param2=25, minRadius=6, maxRadius=15)
+            temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 15, param1=50, param2=20, minRadius=6, maxRadius=15)
 
             # ensure at least some circles were found
             found_robot = [False, False]
@@ -272,7 +272,7 @@ while True:
 
 
             # Write the frame into the file 'output.avi'
-            #out.write(output)
+            out.write(output)
 
             # Compress output and send stream to middleman.
             if border_i == 9 and c.STREAM:
