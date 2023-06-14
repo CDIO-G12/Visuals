@@ -8,6 +8,7 @@ class Borders:
     def __init__(self):
         self.corners = [] * 4
         self.cross_array = [] * 4
+        self.old_cross_array = [] * 4
         self.old_corners = [] * 4
 
 # Determine position of the cross in the middle of the field.
@@ -33,6 +34,22 @@ class Borders:
         for (x1, y1) in self.corners:
             match = False
             for (x2, y2) in self.old_corners:
+                dist = np.abs(((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5)
+                if 10 >= dist:
+                    match = True
+                    break
+            if not match:
+                return False
+
+        return True
+
+    def crosses_close_enough(self):
+        if self.old_cross_array is None:
+            return False
+
+        for (x1, y1) in self.cross_array:
+            match = False
+            for (x2, y2) in self.old_cross_array:
                 dist = np.abs(((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5)
                 if 10 >= dist:
                     match = True
@@ -158,6 +175,12 @@ class Borders:
                         avg = np.mean(value, axis=0)
                         self.check_point_in_cross(avg)
 
+        if self.cross_array and self.crosses_close_enough():
+            self.cross_array = self.old_cross_array
+        elif self.cross_array:
+            self.old_cross_array = self.cross_array
+
+
         # Calculate the average of the corners.
         corner_dict = {'UL': corner_UL_arr, 'UR': corner_UR_arr, 'LR': corner_LR_arr, 'LL': corner_LL_arr}
 
@@ -185,7 +208,6 @@ class Borders:
 
  
 # Function to find the intersection of two lines. # find reference
-
 def line_intersection(line1, line2):
     xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
     ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])
