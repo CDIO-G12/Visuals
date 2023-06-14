@@ -59,7 +59,6 @@ def calculate_robot_position(robot):
     # Calculate pixel ratio
     pixel_ratio = robot_dist_cm / getPixelDist(robot)
 
-    # Calculate mid point
     x_axis = c.WIDTH / 2
     y_axis = c.HEIGHT / 2
     mid_point = (x_axis, y_axis)
@@ -96,6 +95,7 @@ def make_robot_square(robot):
     return coords
 
 
+
 def calculate_average_hue(hue_values):
     sum_angle = 0
     count = 0
@@ -115,9 +115,10 @@ def calculate_average_hue(hue_values):
 
     return int(average_hue/2)
 
-
 class Locator:
     def __init__(self):
+        self.old_orange = None
+        self.orange_balancer = 0
         self.balancer = 0
         self.best = None
         self.circles = []
@@ -131,13 +132,13 @@ class Locator:
         new_circles = []
 
         i = -1
-        # Loop through all circles
         for (x, y, r) in circles:
             i += 1
 
+
+
             hue_avg, sat_avg, val_avg = 0, 0, 0
             hues = []
-            # Loop through all pixels in the circle
             try:
                 ky = -1
                 for kx in [-1, 0, 1, -1, 0, 1, -1, 0, 1]:
@@ -156,7 +157,6 @@ class Locator:
 
             # print((x, y, r), (hue_avg, sat_avg, val_avg))
 
-            # Determine if a ball has been seen inside the robot
             if self.last_robot is not None:
                 coords = make_robot_square(self.last_robot)
                 poly = Polygon(coords)
@@ -164,25 +164,19 @@ class Locator:
                 if p.within(poly):
                     continue
 
-            # Determine if a ball is seen outside borders
             if area_border is not None:
                 p = Point(x, y)
                 if not p.within(area_border):
                     continue
 
-            # Determine if circle is not a ball
             if val_avg < 70 or r < 7:
                 continue
 
-            # Circle found
             new_circles.append((x, y))
 
-            # White ball found
             if sat_avg < MIN_SAT:
                 continue
 
-            # Calculate distance to the different colours, effectively determining which
-            # ball is the best match for the different coloured balls
             p_dist = hsv_distance_from_hue(hue_avg, PINK) + ((255-sat_avg)/10)
             g_dist = hsv_distance_from_hue(hue_avg, GREEN) + ((255-sat_avg)/10)
             if find_orange:  # If we have not found an orange ball yet
@@ -190,9 +184,7 @@ class Locator:
             else:
                 o_dist = 9999
 
-            # Calculating which dist is smallest, so that we can determine which colour it fits best
             m = min(p_dist, g_dist, o_dist)
-            # Appends to list with index based on the colour it fits the best
             if m == p_dist:
                 distances.append((0, m, (x, y)))
             elif m == g_dist:
@@ -204,6 +196,7 @@ class Locator:
         best_val = [9999, 9999, 9999]
 
         best_ball = [(0, 0), (0, 0), None]
+        #print(distances)
 
         for dist in distances:
             ball_type = dist[0]
@@ -213,10 +206,19 @@ class Locator:
 
         orange = (0, 0)
 
-        # Determine the best candidate for the orange ball
-        if find_orange and best_ball[2] is not None:
-            orange = best_ball[2]
-            new_circles.remove(best_ball[2])
+        if best_ball[2] is None:
+            self.orange_balancer += 1
+        else:
+            self.orange_balancer = 0
+
+        if find_orange:
+            if best_ball[2] is not None:
+                self.old_orange = best_ball[2]
+                orange = best_ball[2]
+                new_circles.remove(best_ball[2])
+            elif self.orange_balancer < 3:
+                orange = self.old_orange
+
         robot = None
 
         # Calculate the best candidates for the pink and green ball, and calculate the robot position
@@ -247,8 +249,6 @@ class Locator:
 
         return self.export, robot, orange
 
-    # Determine whether the new circles are close enough to the old circles
-    # to be considered the same.
     def balls_close_enough(self, new_circles):
         if self.best is None:
             return True
