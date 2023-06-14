@@ -49,41 +49,72 @@ class Borders:
 
         # Use canny edge detection
         edges = cv.Canny(redEdges, 50, 150, apertureSize=3)
+
+        new_width = int(c.WIDTH/4)
+        new_height = int(c.HEIGHT/3)
         # Apply HoughLinesP method to
         # directly obtain line end points
 
-        lines_list = []
-        lines = cv.HoughLinesP(
+        lines_list_borders = []
+        lines_list_cross = []
+
+        lines_for_borders = cv.HoughLinesP(
             edges,  # Input edge image
             1,  # Distance resolution in pixels
             np.pi / 180,  # Angle resolution in radians
             threshold=30,  # Min number of votes for valid line
-            minLineLength=5,  # Min allowed length of line
+            minLineLength=100,  # Min allowed length of line
+            maxLineGap=20  # Max allowed gap between line for joining them
+        )
+
+        cropped_cross = edges[new_height:new_height*2, new_width:new_width*3]
+
+        lines_for_cross = cv.HoughLinesP(
+            cropped_cross,  # Input edge image
+            1,  # Distance resolution in pixels
+            np.pi / 180,  # Angle resolution in radians
+            threshold=40,  # Min number of votes for valid line
+            minLineLength=50,  # Min allowed length of line
             maxLineGap=40  # Max allowed gap between line for joining them
         )
 
-        if lines is not None:
+        if lines_for_borders is not None:
             # Iterate over points
-            for points in lines:
+            for points in lines_for_borders:
                 # Extracted points nested in the list
                 x1, y1, x2, y2 = points[0]
                 # Draw the lines joining the points
                 # On the original image
                 cv.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 # Maintain a simples lookup list for points
-                lines_list.append([(x1, y1), (x2, y2)])
+                lines_list_borders.append([(x1, y1), (x2, y2)])
+
+        if lines_for_cross is not None:
+            # Iterate over points
+            for points in lines_for_cross:
+                # Extracted points nested in the list
+                x1, y1, x2, y2 = points[0]
+                # Draw the lines joining the points
+                # On the original image
+                x1 += new_width
+                x2 += new_width
+                y1 += new_height
+                y2 += new_height
+                # cv.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                # Maintain a simples lookup list for points
+                lines_list_cross.append([(x1, y1), (x2, y2)])
 
         # Determine offsets
         upper = 0.025*c.HEIGHT
         lower = 1*c.HEIGHT
-        left = 0.025*c.WIDTH
+        left = 0.025*c.WIDTH 
         right = 0.98*c.WIDTH
         interval = 50
         offset = 20
 
         # Where borderlines intersect, draw edges.
-        for x in lines_list:
-            for y in lines_list:
+        for x in lines_list_borders:
+            for y in lines_list_borders:
                 if y == x:
                     continue
 
@@ -100,19 +131,21 @@ class Borders:
                 elif (left+interval) >= intersect[0] >= left and lower >= intersect[1] >= (lower - interval):
                     corner_LL_arr.append((int(intersect[0]), int(intersect[1])))
 
-                if 0.7*c.WIDTH >= x[0][0] >= 0.3*c.WIDTH and 0.65*c.HEIGHT >= x[0][1] >= 0.25*c.HEIGHT \
-                        and 0.7*c.WIDTH >= y[0][0] >= 0.3*c.WIDTH and 0.65*c.HEIGHT >= y[0][1] >= 0.25*c.HEIGHT:
-
-                    points = {0: [x[0], y[0]], 1: [x[1], y[1]]}
-                    for key, value in points.items():
-                        if math.dist(value[0], value[1]) <= offset:
-                            avg = np.mean(value, axis=0)
-                            self.check_point_in_cross(avg)
+        for x in lines_list_cross:
+            for y in lines_list_cross:
+                if y == x:
+                    continue
+                points = {0: [x[0], y[0]], 1: [x[1], y[1]]}
+                for key, value in points.items():
+                    if math.dist(value[0], value[1]) <= offset:
+                        avg = np.mean(value, axis=0)
+                        self.check_point_in_cross(avg)
 
         # Calculate the average of the corners.
         corner_dict = {'UL': corner_UL_arr, 'UR': corner_UR_arr, 'LR': corner_LR_arr, 'LL': corner_LL_arr}
 
         for i, corner in enumerate(['UL', 'UR', 'LR', 'LL']):
+            # print(corner, len(corner_dict[corner]))
             mean = np.mean(corner_dict[corner], axis=0) if corner_dict[corner] else None
             if mean is not None:
                 x = int(mean[0]) + offset if i in [0, 3] else int(mean[0]) - offset
