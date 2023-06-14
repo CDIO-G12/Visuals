@@ -83,6 +83,7 @@ def calculate_robot_position(robot):
 
     return robot
 
+
 # Draw the square around the robot. Effectively works as a bounding box for the robot.
 def make_robot_square(robot):
     mydegrees = getAngle(robot) + 90
@@ -256,8 +257,8 @@ class Locator:
         for (x1, y1) in new_circles:
             match = False
             for (x2, y2) in self.best:
-                dist = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
-                if 5 >= dist >= -5:
+                dist = np.abs(((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5)
+                if 5 >= dist:
                     match = True
                     break
             if not match:

@@ -8,6 +8,7 @@ class Borders:
     def __init__(self):
         self.corners = [] * 4
         self.cross_array = [] * 4
+        self.old_corners = [] * 4
 
 # Determine position of the cross in the middle of the field.
     def check_point_in_cross(self, avg):
@@ -23,6 +24,23 @@ class Borders:
         # max Y
         if self.cross_array[3] is None or self.cross_array[3][1] < avg[1]:
             self.cross_array[3] = avg
+
+
+    def borders_close_enough(self):
+        if self.old_corners is None:
+            return False
+
+        for (x1, y1) in self.corners:
+            match = False
+            for (x2, y2) in self.old_corners:
+                dist = np.abs(((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5)
+                if 10 >= dist:
+                    match = True
+                    break
+            if not match:
+                return False
+
+        return True
 
     # # calculate the position of the barriers.
     def find_barriers(self, frame, hsv):
@@ -117,7 +135,6 @@ class Borders:
             for y in lines_list_borders:
                 if y == x:
                     continue
-
                 intersect = line_intersection(x, y)
                 if right >= intersect[0] >= (right - interval) and lower >= intersect[1] >= (lower - interval):
                     corner_LR_arr.append((int(intersect[0]), int(intersect[1])))
@@ -152,6 +169,11 @@ class Borders:
                 y = int(mean[1]) + offset if i in [0, 1] else int(mean[1]) - offset
                 self.corners[i] = (x, y)
 
+        if all(self.corners) and self.borders_close_enough():
+            self.corners = self.old_corners
+        elif all(self.corners):
+            self.old_corners = self.corners
+
         # Calculate the position of the goal.
         goal = (0, 0)
         if self.corners[0] is not None and self.corners[3] is not None:
@@ -162,7 +184,8 @@ class Borders:
         return self.corners, goal, self.cross_array
 
  
-# Function to find the intersection of two lines.
+# Function to find the intersection of two lines. # find reference
+
 def line_intersection(line1, line2):
     xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
     ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])
