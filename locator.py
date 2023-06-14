@@ -59,7 +59,6 @@ def calculate_robot_position(robot):
     # Calculate pixel ratio
     pixel_ratio = robot_dist_cm / getPixelDist(robot)
 
-    # Calculate mid point
     x_axis = c.WIDTH / 2
     y_axis = c.HEIGHT / 2
     mid_point = (x_axis, y_axis)
@@ -84,6 +83,7 @@ def calculate_robot_position(robot):
 
     return robot
 
+
 # Draw the square around the robot. Effectively works as a bounding box for the robot.
 def make_robot_square(robot):
     mydegrees = getAngle(robot) + 90
@@ -94,6 +94,7 @@ def make_robot_square(robot):
     py = int(robot[0][1] + (100 * np.sin(mydegrees * np.pi / 180)))
     coords = [robot[0], robot[1], (gx, gy), (px, py)]
     return coords
+
 
 
 def calculate_average_hue(hue_values):
@@ -115,9 +116,10 @@ def calculate_average_hue(hue_values):
 
     return int(average_hue/2)
 
-
 class Locator:
     def __init__(self):
+        self.old_orange = None
+        self.orange_balancer = 0
         self.balancer = 0
         self.best = None
         self.circles = []
@@ -137,7 +139,6 @@ class Locator:
 
             hue_avg, sat_avg, val_avg = 0, 0, 0
             hues = []
-            # Loop through all pixels in the circle
             try:
                 ky = -1
                 for kx in [-1, 0, 1, -1, 0, 1, -1, 0, 1]:
@@ -154,11 +155,7 @@ class Locator:
                 continue
             hue_avg = calculate_average_hue(hues)  # calculate average hue for the circle
 
-            print((x, y, r), (hue_avg, sat_avg, val_avg))
-
-            # Determine if circle is not a ball
-            if val_avg < 70 or r < 7:
-                continue
+            # print((x, y, r), (hue_avg, sat_avg, val_avg))
 
             # Determine if a ball has been seen inside the robot
             if self.last_robot is not None:
@@ -175,7 +172,6 @@ class Locator:
                     pass
                     #continue
 
-            # Circle found
             new_circles.append((x, y))
 
             # White ball found
@@ -214,10 +210,19 @@ class Locator:
 
         orange = (0, 0)
 
-        # Determine the best candidate for the orange ball
-        if find_orange and best_ball[2] is not None:
-            orange = best_ball[2]
-            new_circles.remove(best_ball[2])
+        if best_ball[2] is None:
+            self.orange_balancer += 1
+        else:
+            self.orange_balancer = 0
+
+        if find_orange:
+            if best_ball[2] is not None:
+                self.old_orange = best_ball[2]
+                orange = best_ball[2]
+                new_circles.remove(best_ball[2])
+            elif self.orange_balancer < 3:
+                orange = self.old_orange
+
         robot = None
 
         # Calculate the best candidates for the pink and green ball, and calculate the robot position
@@ -237,7 +242,7 @@ class Locator:
         else:
             self.balancer = 0
 
-        if self.balancer > 24:
+        if self.balancer > 12:
             self.circles = new_circles
             self.export = new_circles
 
@@ -257,8 +262,8 @@ class Locator:
         for (x1, y1) in new_circles:
             match = False
             for (x2, y2) in self.best:
-                dist = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
-                if 5 >= dist >= -5:
+                dist = np.abs(((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5)
+                if 5 >= dist:
                     match = True
                     break
             if not match:
