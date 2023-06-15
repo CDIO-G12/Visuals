@@ -26,7 +26,7 @@ class Borders:
         if self.cross_array[3] is None or self.cross_array[3][1] < avg[1]:
             self.cross_array[3] = avg
 
-
+    """""
     def borders_close_enough(self):
         if self.old_corners is None:
             return False
@@ -42,11 +42,23 @@ class Borders:
                 return False
 
         return True
+    """
 
-    def crosses_close_enough(self):
-        if self.old_cross_array is None:
+    def borders_close_enough(self): # TODO: check if this works, reliably. Samuel pointed out that sometimes a corners is detected in (0, 0).
+        if self.old_corners is None:
             return False
 
+        for (x1, y1) in self.corners:
+            if all(np.abs(((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5) > 10 for (x2, y2) in self.old_corners):
+                return False
+
+        return True
+
+    def crosses_close_enough(self): # TODO: Make this work reliably.
+        if self.old_cross_array is None:
+            return False
+        if any(x is None for x in self.cross_array):
+            return False
         for (x1, y1) in self.cross_array:
             match = False
             for (x2, y2) in self.old_cross_array:
@@ -82,11 +94,14 @@ class Borders:
         # red_edges = cv.cvtColor(frame2, cv.COLOR_BGR2GRAY)
         redEdges = frame2
 
-        # Use canny edge detection
-        edges = cv.Canny(redEdges, 50, 150, apertureSize=3)
 
         new_width = int(c.WIDTH/4)
         new_height = int(c.HEIGHT/3)
+        cropped_cross = redEdges[new_height:new_height*2, new_width:new_width*3]
+        # Use canny edge detection
+        edges = cv.Canny(redEdges, 50, 150, apertureSize=3)
+        cross_edges = cv.Canny(cropped_cross, 50, 150, apertureSize=3)
+
         # Apply HoughLinesP method to
         # directly obtain line end points
 
@@ -102,10 +117,8 @@ class Borders:
             maxLineGap=20  # Max allowed gap between line for joining them
         )
 
-        cropped_cross = edges[new_height:new_height*2, new_width:new_width*3]
-
         lines_for_cross = cv.HoughLinesP(
-            cropped_cross,  # Input edge image
+            cross_edges,  # Input edge image
             1,  # Distance resolution in pixels
             np.pi / 180,  # Angle resolution in radians
             threshold=40,  # Min number of votes for valid line
@@ -175,11 +188,12 @@ class Borders:
                         avg = np.mean(value, axis=0)
                         self.check_point_in_cross(avg)
 
+        """
         if self.cross_array and self.crosses_close_enough():
             self.cross_array = self.old_cross_array
         elif self.cross_array:
             self.old_cross_array = self.cross_array
-
+        """
 
         # Calculate the average of the corners.
         corner_dict = {'UL': corner_UL_arr, 'UR': corner_UR_arr, 'LR': corner_LR_arr, 'LL': corner_LL_arr}
