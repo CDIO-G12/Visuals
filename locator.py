@@ -53,10 +53,13 @@ def read_settings():
 def calculate_robot_position(robot):
     # Constants
     robot_dist_cm = 18.5  # cm distance between circles on robot
-    cam_height = 148  # Camera height in cm, from ground
+    cam_height = 153  # Camera height in cm, from ground
     robot_height = 9.5  # Robot height in cm, from ground
 
     # Calculate pixel ratio
+    if robot is None:
+        return robot
+
     pixel_ratio = robot_dist_cm / getPixelDist(robot)
 
     x_axis = c.WIDTH / 2
@@ -96,7 +99,6 @@ def make_robot_square(robot):
     return coords
 
 
-
 def calculate_average_hue(hue_values):
     sum_angle = 0
     count = 0
@@ -123,7 +125,7 @@ class Locator:
         self.balancer = 0
         self.best = None
         self.circles = []
-        self.last_robot = [[0, 0], [0, 0]]
+        self.last_robot = None
         self.export = None
         read_settings()
 
@@ -228,14 +230,23 @@ class Locator:
         # Calculate the best candidates for the pink and green ball, and calculate the robot position
         # with respect to perspective distortion.
         if best_ball[0] != (0, 0) and best_ball[1] != (0, 0) and is_close(best_ball[0], best_ball[1], 300):
-            robot = [best_ball[0], best_ball[1]]
-            if c.PERSPECTIVE_OFFSET:
+            if self.last_robot is None:  # If we have not seen a robot yet
+                robot = [best_ball[0], best_ball[1]]
+                self.last_robot = robot
+            elif self.robot_pos_stabilizer([best_ball[0], best_ball[1]]):
+                robot = [best_ball[0], best_ball[1]]
+                self.last_robot = robot
+            else:
+                robot = self.last_robot
+
+            if c.PERSPECTIVE_OFFSET and robot is not None:
                 robot = calculate_robot_position(robot)
 
         if best_ball[0] in new_circles:
             new_circles.remove(best_ball[0])
         if best_ball[1] in new_circles:
             new_circles.remove(best_ball[1])
+
 
         if self.balls_close_enough(new_circles):
             self.balancer += 1
@@ -271,12 +282,27 @@ class Locator:
 
         return True
 
+    # If the position of the robot's balls (hehe) differs too much from the previous position, return false.
+    def robot_pos_stabilizer(self, robot_pos):
+
+        if robot_pos is None:
+            return False
+
+        for (x1, y1) in self.last_robot:
+            match = False
+            for (x2, y2) in robot_pos:
+                dist = np.abs(((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5)
+                if 30 >= dist:
+                    match = True
+                    break
+            if not match:
+                return False
+        return True
 
 # Determine whether two points are close enough to be considered the same.
 def hsv_distance_from_hue(hsv_hue, hue):
     dist = min(abs(hsv_hue - hue), abs(hsv_hue - (hue - 180)))
     return dist
-
 
 # Determine whether ball is white.
 def is_ball(hsv, sat):
@@ -321,7 +347,6 @@ def getAngle(point_array):
     myradians = math.atan2(point_array[0][1] - point_array[1][1], point_array[0][0] - point_array[1][0])
     return int(math.degrees(myradians))
 
-
 # Calculate distance between two points in pixels.
 def getPixelDist(robot_pos):
     return math.sqrt(math.pow(robot_pos[0][0] - robot_pos[1][0], 2) + math.pow(robot_pos[0][1] - robot_pos[1][1], 2))
@@ -331,9 +356,8 @@ def getPixelDist(robot_pos):
 def is_robot(frame):
     return frame[0] < 160 and frame[1] > 180 and frame[2] > 230
 
-
 # See if point1 is close to point2
-def is_close(point1, point2, thresh = 5):
+def is_close(point1, point2, thresh=5):
     x = abs(point1[0] - point2[0])
     y = abs(point1[1] - point2[1])
     dist = math.sqrt(x**2 + y**2)

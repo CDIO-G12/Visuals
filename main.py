@@ -78,7 +78,7 @@ while True:
         # If statement to decide wether to use a videofile or live camera
         if c.VIDEO or VIDEO:
             cap = cv.VideoCapture(c.VIDEOFILE)
-            c.CROP = False
+            c.CROP = True
         else:
             cap = cv.VideoCapture(CAMERASOURCE, cv.CAP_DSHOW)
 
@@ -152,7 +152,7 @@ while True:
 
             # Determines how often we detect borders and cross, every 'x' amount of frame
             if border_i <= 0:
-                border_i = 10    # resets counter until next detection
+                border_i = 1    # resets counter until next detection
                 corner_array, goal, cross_array = borderInstance.find_barriers(output, hsv)  # call to bordersclass
                 if goal is not None:  # show goal if found
                     cv.rectangle(output, (goal[0] - 2, goal[1] - 2), (goal[0] + 2, goal[1] + 2), (255, 255, 255), -1)
@@ -188,7 +188,7 @@ while True:
             if temp_circles is not None and len(temp_circles) > 0:
                 circles, robot, orange = locator.locate(hsv, temp_circles, area_border, find_orange)
             else:
-                #cv.imshow("output", gray)
+                cv.imshow("output", output)
                 continue
 
             # Check if robot is inside our borders
@@ -205,6 +205,9 @@ while True:
                     print("good to go")
 
             if circles is None:
+                continue
+
+            if cross_array is None:
                 continue
 
             # send data to middleman.
