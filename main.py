@@ -61,7 +61,6 @@ if c.CROP:  # check boolean
     c.WIDTH -= c.CROP_AMOUNT * 2
 
 
-cv.namedWindow('output')
 
 # Main loop
 while True:
@@ -73,6 +72,8 @@ while True:
             sleep(0.5)
             continue
         print("Got new connection!\n")
+
+        cv.namedWindow('output')
 
         # If statement to decide wether to use a videofile or live camera
         if c.VIDEO or VIDEO:
@@ -91,6 +92,8 @@ while True:
         cap.set(cv.CAP_PROP_FRAME_WIDTH, ORIGINAL_WIDTH)
         cap.set(cv.CAP_PROP_FRAME_HEIGHT, c.HEIGHT)
         cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
+        cap.set(cv.CAP_PROP_AUTOFOCUS, 0)
+        cap.set(cv.CAP_PROP_CONTRAST, 0.25)
 
         # Frame
         frame_width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
@@ -112,6 +115,8 @@ while True:
             out = cv.VideoWriter('recordings/output-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
         else:
             out = cv.VideoWriter('recordings/output.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (c.WIDTH, c.HEIGHT))
+
+        find_orange = True
 
         while True:
             # Capture frame-by-frame
@@ -181,7 +186,7 @@ while True:
 
             # checks if we have found any circles
             if temp_circles is not None and len(temp_circles) > 0:
-                circles, robot, orange = locator.locate(hsv, temp_circles, area_border)
+                circles, robot, orange = locator.locate(hsv, temp_circles, area_border, find_orange)
             else:
                 #cv.imshow("output", gray)
                 continue
@@ -214,6 +219,9 @@ while True:
                 first = True
                 spl = data.decode().split("\n")
                 for parts in spl:
+                    if parts.startswith("no"):
+                        find_orange = False
+                        continue
 
                     innerSplit = parts.split("/")  # Segments messages into parts, seperated by '/'
 

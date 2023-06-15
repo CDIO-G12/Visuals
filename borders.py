@@ -44,7 +44,8 @@ class Borders:
         return True
 
     def crosses_close_enough(self):
-        if self.old_cross_array is None:
+
+        if self.old_cross_array is None or any(self.cross_array) is None:
             return False
 
         for (x1, y1) in self.cross_array:
@@ -175,11 +176,11 @@ class Borders:
                         avg = np.mean(value, axis=0)
                         self.check_point_in_cross(avg)
 
-        if self.cross_array and self.crosses_close_enough():
+        """if not(any(self.cross_array) is None) and self.crosses_close_enough():
             self.cross_array = self.old_cross_array
         elif self.cross_array:
             self.old_cross_array = self.cross_array
-
+        """
 
         # Calculate the average of the corners.
         corner_dict = {'UL': corner_UL_arr, 'UR': corner_UR_arr, 'LR': corner_LR_arr, 'LL': corner_LL_arr}

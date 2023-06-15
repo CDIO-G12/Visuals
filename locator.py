@@ -43,7 +43,7 @@ def read_settings():
             MIN_VAL = 50
 
         MIN_VAL = 75
-        MIN_SAT = 50
+        MIN_SAT = 20
         print("Got PGO values from Settings.csv")
     except FileNotFoundError:
         pass
@@ -242,7 +242,7 @@ class Locator:
         else:
             self.balancer = 0
 
-        if self.balancer > 12:
+        if self.balancer > 3:
             self.circles = new_circles
             self.export = new_circles
 
