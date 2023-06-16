@@ -22,6 +22,7 @@ CROP = True  # Crop the output image.
 CROP_AMOUNT = 150  #Amount of pixels to crop from each side.
 
 CAM_HEIGHT = 150  # Height of the camera in cm.
+BORDER = 10  # Border around the image.
 
 PERSPECTIVE_OFFSET = True  # Rectify the image for perspective offset.
 
