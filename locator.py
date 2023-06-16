@@ -60,7 +60,10 @@ def calculate_robot_position(robot):
     if robot is None:
         return robot
 
-    pixel_ratio = robot_dist_cm / getPixelDist(robot)
+    pd = getPixelDist(robot)
+    if pd == 0:
+        print(robot)
+    pixel_ratio = robot_dist_cm / pd
 
     x_axis = c.WIDTH / 2
     y_axis = c.HEIGHT / 2
@@ -230,7 +233,7 @@ class Locator:
         # Calculate the best candidates for the pink and green ball, and calculate the robot position
         # with respect to perspective distortion.
         if best_ball[0] != (0, 0) and best_ball[1] != (0, 0) and is_close(best_ball[0], best_ball[1], 300):
-            if self.last_robot is None:  # If we have not seen a robot yet
+            """if self.last_robot is None:  # If we have not seen a robot yet
                 robot = [best_ball[0], best_ball[1]]
                 self.last_robot = robot
             elif self.robot_pos_stabilizer([best_ball[0], best_ball[1]]):
@@ -238,7 +241,8 @@ class Locator:
                 self.last_robot = robot
             else:
                 robot = self.last_robot
-
+            """
+            robot = [best_ball[0], best_ball[1]]
             if c.PERSPECTIVE_OFFSET and robot is not None:
                 robot = calculate_robot_position(robot)
 
@@ -292,7 +296,7 @@ class Locator:
             match = False
             for (x2, y2) in robot_pos:
                 dist = np.abs(((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5)
-                if 30 >= dist:
+                if 50 >= dist:
                     match = True
                     break
             if not match:

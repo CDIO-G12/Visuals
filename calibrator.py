@@ -73,7 +73,8 @@ if __name__ == '__main__':
     cap.set(cv.CAP_PROP_FRAME_HEIGHT, c.HEIGHT)
     cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
     cap.set(cv.CAP_PROP_AUTOFOCUS, 0)
-    cap.set(cv.CAP_PROP_CONTRAST, 0.25)
+    if c.CONTRAST is not None:
+        cap.set(cv.CAP_PROP_CONTRAST, c.CONTRAST)
 
     cv.namedWindow('output')
     cv.setMouseCallback('output', mouse_press)

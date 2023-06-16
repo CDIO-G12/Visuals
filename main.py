@@ -93,7 +93,8 @@ while True:
         cap.set(cv.CAP_PROP_FRAME_HEIGHT, c.HEIGHT)
         cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
         cap.set(cv.CAP_PROP_AUTOFOCUS, 0)
-        cap.set(cv.CAP_PROP_CONTRAST, 0.25)
+        if c.CONTRAST is not None:
+            cap.set(cv.CAP_PROP_CONTRAST, c.CONTRAST)
 
         # Frame
         frame_width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))
@@ -112,8 +113,12 @@ while True:
         # Define the codec and create VideoWriter object.The output is stored in 'output.avi' file.
         if c.RECORD:
             # Using datetime to create unique file names
-            out = cv.VideoWriter('recordings/output-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
+            out_c = cv.VideoWriter('recordings/outputCLEAN-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.avi',
+                                 cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
+            out = cv.VideoWriter('recordings/output-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.avi',
+                                 cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
         else:
+            out_c = cv.VideoWriter('recordings/outputCLEAN.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (c.WIDTH, c.HEIGHT))
             out = cv.VideoWriter('recordings/output.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (c.WIDTH, c.HEIGHT))
 
         find_orange = True
@@ -139,7 +144,7 @@ while True:
             gray = cv.medianBlur(gray, 11)
 
             output = frame.copy()
-            out.write(output)
+            out_c.write(output)
 
             picFrame = frame
             # define colour borders for our mask

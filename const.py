@@ -16,6 +16,7 @@ CAMERASOURCE = 2
 
 WIDTH = 1280
 HEIGHT = 720
+CONTRAST = None #0.5
 
 CROP = True # Crop the output image.
 CROP_AMOUNT = 150 #Amount of pixels to crop from each side.
