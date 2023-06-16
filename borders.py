@@ -17,13 +17,13 @@ class Borders:
         if self.cross_array[0] is None or self.cross_array[0][0] > avg[0]:
             self.cross_array[0] = avg
         # max X
-        if self.cross_array[1] is None or self.cross_array[1][0] < avg[0]:
+        elif self.cross_array[1] is None or self.cross_array[1][0] < avg[0]:
             self.cross_array[1] = avg
         # min Y
-        if self.cross_array[2] is None or self.cross_array[2][1] > avg[1]:
+        elif self.cross_array[2] is None or self.cross_array[2][1] > avg[1]:
             self.cross_array[2] = avg
         # max Y
-        if self.cross_array[3] is None or self.cross_array[3][1] < avg[1]:
+        elif self.cross_array[3] is None or self.cross_array[3][1] < avg[1]:
             self.cross_array[3] = avg
 
     """""
@@ -56,9 +56,10 @@ class Borders:
 
     def crosses_close_enough(self): # TODO: Make this work reliably.
         if self.old_cross_array is None:
+            return True
+        if not self.cross_array:
             return False
-        if any(x is None for x in self.cross_array):
-            return False
+
         for (x1, y1) in self.cross_array:
             match = False
             for (x2, y2) in self.old_cross_array:
@@ -83,10 +84,10 @@ class Borders:
         #frame = cv.medianBlur(frame, 11)
         #Initialize the upper and lower boundaries of the "orange" in the HSV color space
         lower = np.array([0, 120, 50], dtype="uint8")
-        upper = np.array([10, 255, 255], dtype="uint8")
+        upper = np.array([15, 255, 255], dtype="uint8")
         mask1 = cv.inRange(hsv, lower, upper)
 
-        lower = np.array([170, 120, 50], dtype="uint8")
+        lower = np.array([165, 120, 50], dtype="uint8")
         upper = np.array([180, 255, 255], dtype="uint8")
         mask2 = cv.inRange(hsv, lower, upper)
         mask = mask1 | mask2
@@ -98,9 +99,13 @@ class Borders:
         new_width = int(c.WIDTH/4)
         new_height = int(c.HEIGHT/3)
 
+
         # Use canny edge detection
         edges = cv.Canny(redEdges, 50, 150, apertureSize=3)
+        edges = cv.GaussianBlur(edges, (5, 5), 0)
         cropped_cross = edges[new_height:new_height * 2, new_width:new_width * 3]
+
+        # cv.imshow("redEdges", cropped_cross)
 
         # Apply HoughLinesP method to
         # directly obtain line end points
@@ -121,9 +126,9 @@ class Borders:
             cropped_cross,  # Input edge image
             1,  # Distance resolution in pixels
             np.pi / 180,  # Angle resolution in radians
-            threshold=40,  # Min number of votes for valid line
-            minLineLength=50,  # Min allowed length of line
-            maxLineGap=40  # Max allowed gap between line for joining them
+            threshold=90,  # Min number of votes for valid line
+            minLineLength=95,  # Min allowed length of line
+            maxLineGap=30  # Max allowed gap between line for joining them
         )
 
         if lines_for_borders is not None:
@@ -133,7 +138,7 @@ class Borders:
                 x1, y1, x2, y2 = points[0]
                 # Draw the lines joining the points
                 # On the original image
-                cv.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                # cv.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 # Maintain a simples lookup list for points
                 lines_list_borders.append([(x1, y1), (x2, y2)])
 
@@ -148,9 +153,11 @@ class Borders:
                 x2 += new_width
                 y1 += new_height
                 y2 += new_height
-                # cv.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                cv.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 # Maintain a simples lookup list for points
                 lines_list_cross.append([(x1, y1), (x2, y2)])
+
+
 
         # Determine offsets
         upper = 0.025*c.HEIGHT
@@ -186,14 +193,13 @@ class Borders:
                 for key, value in points.items():
                     if math.dist(value[0], value[1]) <= offset:
                         avg = np.mean(value, axis=0)
-                        self.check_point_in_cross(avg)
+                        self.check_point_in_cross((int(avg[0]), int(avg[1])))
 
-        """
-        if self.cross_array and self.crosses_close_enough():
-            self.cross_array = self.old_cross_array
-        elif self.cross_array:
+        # check if all elements of self.cross_array are True using all()
+        if self.cross_array:
             self.old_cross_array = self.cross_array
-        """
+        else:
+            self.cross_array = self.old_cross_array
 
         # Calculate the average of the corners.
         corner_dict = {'UL': corner_UL_arr, 'UR': corner_UR_arr, 'LR': corner_LR_arr, 'LL': corner_LL_arr}
