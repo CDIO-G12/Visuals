@@ -1,4 +1,3 @@
-import argparse
 import math
 import numpy as np
 import const as c
@@ -35,7 +34,7 @@ def read_settings():
                 ORANGE = line[0]
                 break
             i += 1
-        MIN_SAT = int(sat*0.7)
+        MIN_SAT = sat
         if MIN_SAT < 50:
             MIN_SAT = 50
         MIN_VAL = int(val*0.7)
@@ -53,7 +52,7 @@ def read_settings():
 def calculate_robot_position(robot):
     # Constants
     robot_dist_cm = 18.5  # cm distance between circles on robot
-    cam_height = 153  # Camera height in cm, from ground
+    cam_height = c.CAM_HEIGHT  # Camera height in cm, from ground
     robot_height = 9.5  # Robot height in cm, from ground
 
     # Calculate pixel ratio
@@ -370,3 +369,28 @@ def is_close(point1, point2, thresh=5):
     y = abs(point1[1] - point2[1])
     dist = math.sqrt(x**2 + y**2)
     return dist < thresh
+
+def gen_mask(frame, hue):
+    lower_hue = hue - 10
+    upper_hue = hue + 10
+
+    if lower_hue < 0 or upper_hue > 100:
+        lower = np.array([0, MIN_SAT, 50], dtype="uint8")
+        upper = np.array([10, 255, 255], dtype="uint8")
+        mask1 = cv.inRange(frame, lower, upper)
+
+        lower = np.array([170, MIN_SAT, 50], dtype="uint8")
+        upper = np.array([180, 255, 255], dtype="uint8")
+        mask2 = cv.inRange(frame, lower, upper)
+        mask = mask1 | mask2
+        return mask
+    else:
+        lower = np.array([lower_hue, MIN_SAT, MIN_VAL], dtype="uint8")
+        upper = np.array([upper_hue, 255, 255], dtype="uint8")
+        mask = cv.inRange(frame, lower, upper)
+        return mask
+
+
+
+
+

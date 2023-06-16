@@ -177,9 +177,6 @@ while True:
                 goal = None
             border_i -= 1  # decrement counter for checking borders...
 
-            # detect circles in the image
-            temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 15, param1=50, param2=20, minRadius=7, maxRadius=15)
-
             # ensure at least some circles were found
             found_robot = [False, False]
             robot_l_r = [[0, 0], [0, 0]]
@@ -190,11 +187,12 @@ while True:
             circles = None
 
             # checks if we have found any circles
-            if temp_circles is not None and len(temp_circles) > 0:
-                circles, robot, orange = locator.locate(hsv, temp_circles, area_border, find_orange)
-            else:
-                cv.imshow("output", output)
+
+            circles, robot, orange = locator.locate(hsv, gray, frame, area_border, find_orange)
+            if circles is None and robot is None and orange is None:
                 continue
+
+            cv.imshow("output", output)
 
             # Check if robot is inside our borders
             if robot is not None and not [(0, 0), (0, 0)] and False:  # only check if currently have some coordinates
