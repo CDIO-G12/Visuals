@@ -140,8 +140,8 @@ while True:
             # Our operations on the frame come here
             hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
             gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-            kernel = np.ones((5, 5), np.uint8)
-            gray = cv.medianBlur(gray, 11)
+            gray = cv.GaussianBlur(gray, (7, 7), 0)
+
 
             output = frame.copy()
             out_c.write(output)
@@ -178,7 +178,7 @@ while True:
             border_i -= 1  # decrement counter for checking borders...
 
             # detect circles in the image
-            temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 15, param1=50, param2=20, minRadius=6, maxRadius=15)
+            temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 15, param1=50, param2=20, minRadius=7, maxRadius=15)
 
             # ensure at least some circles were found
             found_robot = [False, False]

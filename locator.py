@@ -133,6 +133,7 @@ class Locator:
         read_settings()
 
     def locate(self, hsv, circles, area_border, find_orange=True, ball_count=10):
+        min_sat = 60
         distances = ([])
         circles = np.round(circles[0, :]).astype("int")  # convert circles to ints
         new_circles = []
@@ -168,6 +169,7 @@ class Locator:
                 poly = Polygon(coords)
                 p = Point(x, y)
                 if p.within(poly):
+                    #print("Ball inside robot")
                     continue
 
             # Determine if a ball is seen outside borders
@@ -180,8 +182,10 @@ class Locator:
             new_circles.append((x, y))
 
             # White ball found
-            if sat_avg < MIN_SAT:
+            if sat_avg < min_sat:
                 continue
+
+
 
             # Calculate distance to the different colours, effectively determining which
             # ball is the best match for the different coloured balls
@@ -200,8 +204,8 @@ class Locator:
             elif m == g_dist:
                 distances.append((1, m, (x, y)))
             else:
+                #print((x, y), (hue_avg, hsv[y][x][1], hsv[y][x][2]), (p_dist, g_dist, o_dist))
                 distances.append((2, m, (x, y)))
-            # print((x, y), (hsv_avg, hsv[y][x][1], hsv[y][x][2]), (p_dist, g_dist, o_dist))
 
         best_val = [9999, 9999, 9999]
 
