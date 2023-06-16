@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import const as c
-from statistics import median
+import cv2 as cv
 from shapely.geometry import Point, Polygon
 
 PINK = 180
@@ -41,8 +41,6 @@ def read_settings():
         if MIN_VAL < 50:
             MIN_VAL = 50
 
-        MIN_VAL = 75
-        MIN_SAT = 20
         print("Got PGO values from Settings.csv")
     except FileNotFoundError:
         pass
@@ -131,12 +129,26 @@ class Locator:
         self.export = None
         read_settings()
 
-    def locate(self, hsv, circles, area_border, find_orange=True, ball_count=10):
+    def locate(self, hsv, gray, frame, area_border, find_orange=True, ball_count=10):
+        # print("MIN_SAT: " + str(MIN_SAT))
+
+        # coloured_balls_mask = gen_mask(hsv, PINK) | gen_mask(hsv, GREEN) | gen_mask(hsv, ORANGE)
+        #coloured_balls_mask_inverted = cv.bitwise_not(gen_mask(hsv, PINK) | gen_mask(hsv, GREEN) | gen_mask(hsv, ORANGE))
+
+        # coloured_balls_frame = cv.bitwise_and(gray, gray, mask=coloured_balls_mask)
+        #white_balls_frame = cv.bitwise_and(gray, gray, mask=coloured_balls_mask_inverted)
+
+        # cv.imshow('colourball', coloured_balls_frame)
+        # cv.imshow('whiteball', white_balls_frame)
+
+        temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 15, param1=50, param2=20, minRadius=7, maxRadius=15)
         min_sat = 60
         distances = ([])
-        circles = np.round(circles[0, :]).astype("int")  # convert circles to ints
-        new_circles = []
+        if temp_circles is None:
+            return None, None, None
 
+        circles = np.round(temp_circles[0, :]).astype("int")  # convert circles to ints
+        new_circles = []
         i = -1
         # Loop through all circles
         for (x, y, r) in circles:
@@ -160,7 +172,7 @@ class Locator:
                 continue
             hue_avg = calculate_average_hue(hues)  # calculate average hue for the circle
 
-            # print((x, y, r), (hue_avg, sat_avg, val_avg))
+            print((x, y, r), (hue_avg, sat_avg, val_avg))
 
             # Determine if a ball has been seen inside the robot
             if self.last_robot is not None:
@@ -168,7 +180,6 @@ class Locator:
                 poly = Polygon(coords)
                 p = Point(x, y)
                 if p.within(poly):
-                    #print("Ball inside robot")
                     continue
 
             # Determine if a ball is seen outside borders
@@ -183,8 +194,6 @@ class Locator:
             # White ball found
             if sat_avg < min_sat:
                 continue
-
-
 
             # Calculate distance to the different colours, effectively determining which
             # ball is the best match for the different coloured balls
@@ -253,7 +262,6 @@ class Locator:
             new_circles.remove(best_ball[0])
         if best_ball[1] in new_circles:
             new_circles.remove(best_ball[1])
-
 
         if self.balls_close_enough(new_circles):
             self.balancer += 1

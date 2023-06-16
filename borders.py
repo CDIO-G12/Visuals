@@ -97,10 +97,10 @@ class Borders:
 
         new_width = int(c.WIDTH/4)
         new_height = int(c.HEIGHT/3)
-        cropped_cross = redEdges[new_height:new_height*2, new_width:new_width*3]
+
         # Use canny edge detection
         edges = cv.Canny(redEdges, 50, 150, apertureSize=3)
-        cross_edges = cv.Canny(cropped_cross, 50, 150, apertureSize=3)
+        cropped_cross = edges[new_height:new_height * 2, new_width:new_width * 3]
 
         # Apply HoughLinesP method to
         # directly obtain line end points
@@ -118,7 +118,7 @@ class Borders:
         )
 
         lines_for_cross = cv.HoughLinesP(
-            cross_edges,  # Input edge image
+            cropped_cross,  # Input edge image
             1,  # Distance resolution in pixels
             np.pi / 180,  # Angle resolution in radians
             threshold=40,  # Min number of votes for valid line

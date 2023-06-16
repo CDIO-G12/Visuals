@@ -1,8 +1,6 @@
 import datetime
 
 import cv2 as cv
-from matplotlib import pyplot as plt
-
 import numpy as np
 from time import sleep
 from shapely.geometry import Point, Polygon
@@ -181,11 +179,6 @@ while True:
             found_robot = [False, False]
             robot_l_r = [[0, 0], [0, 0]]
 
-            # booleans for circles
-            orange = None
-            robot = None
-            circles = None
-
             # checks if we have found any circles
 
             circles, robot, orange = locator.locate(hsv, gray, frame, area_border, find_orange)
@@ -208,9 +201,6 @@ while True:
                     print("good to go")
 
             if circles is None:
-                continue
-
-            if cross_array is None:
                 continue
 
             # send data to middleman.
