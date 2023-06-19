@@ -95,14 +95,14 @@ class Borders:
         # red_edges = cv.cvtColor(frame2, cv.COLOR_BGR2GRAY)
         redEdges = frame2
 
-        new_width = int(c.WIDTH/4)
+        new_width = int(c.WIDTH/3)
         new_height = int(c.HEIGHT/3)
 
 
         # Use canny edge detection
         edges = cv.Canny(redEdges, 50, 150, apertureSize=3)
         edges = cv.GaussianBlur(edges, (5, 5), 0)
-        cropped_cross = edges[new_height:new_height * 2, new_width:new_width * 3]
+        cropped_cross = edges[new_height:new_height * 2, new_width:new_width * 2]
 
         # cv.imshow("redEdges", cropped_cross)
 
@@ -117,7 +117,7 @@ class Borders:
             1,  # Distance resolution in pixels
             np.pi / 180,  # Angle resolution in radians
             threshold=30,  # Min number of votes for valid line
-            minLineLength=100,  # Min allowed length of line
+            minLineLength=200,  # Min allowed length of line
             maxLineGap=20  # Max allowed gap between line for joining them
         )
 
@@ -125,9 +125,9 @@ class Borders:
             cropped_cross,  # Input edge image
             1,  # Distance resolution in pixels
             np.pi / 180,  # Angle resolution in radians
-            threshold=90,  # Min number of votes for valid line
-            minLineLength=105,  # Min allowed length of line
-            maxLineGap=40  # Max allowed gap between line for joining them
+            threshold=100,  # Min number of votes for valid line
+            minLineLength=130,  # Min allowed length of line
+            maxLineGap=20  # Max allowed gap between line for joining them
         )
 
         if lines_for_borders is not None:

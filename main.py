@@ -144,8 +144,9 @@ while True:
             # Our operations on the frame come here
             hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
             gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-            gray = cv.GaussianBlur(gray, (5, 5), 0)
+            gray = cv.GaussianBlur(gray, (7, 7), 0)
 
+            # cv.imshow("gray", gray)
 
             output = frame.copy()
             out_c.write(output)
