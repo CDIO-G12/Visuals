@@ -34,7 +34,7 @@ def read_settings():
                 ORANGE = line[0]
                 break
             i += 1
-        MIN_SAT = sat
+        MIN_SAT = int(sat*0.7)
         if MIN_SAT < 50:
             MIN_SAT = 50
         MIN_VAL = int(val*0.7)
@@ -172,15 +172,13 @@ class Locator:
                 continue
             hue_avg = calculate_average_hue(hues)  # calculate average hue for the circle
 
-            print((x, y, r), (hue_avg, sat_avg, val_avg))
+            #print((x, y, r), (hue_avg, sat_avg, val_avg), MIN_SAT)
 
-            # Determine if a ball has been seen inside the robot
-            if self.last_robot is not None:
-                coords = make_robot_square(self.last_robot)
-                poly = Polygon(coords)
-                p = Point(x, y)
-                if p.within(poly):
-                    continue
+            # White ball found
+            if val_avg < 150:
+                continue
+
+            cv.circle(frame, (x, y), r, (125, 125, 125), 2)
 
             # Determine if a ball is seen outside borders
             if area_border is not None:
@@ -192,7 +190,7 @@ class Locator:
             new_circles.append((x, y))
 
             # White ball found
-            if sat_avg < min_sat:
+            if sat_avg < MIN_SAT:
                 continue
 
             # Calculate distance to the different colours, effectively determining which
@@ -255,13 +253,24 @@ class Locator:
                 robot = self.last_robot
             """
             robot = [best_ball[0], best_ball[1]]
+            #self.last_robot = robot
             if c.PERSPECTIVE_OFFSET and robot is not None:
                 robot = calculate_robot_position(robot)
+
 
         if best_ball[0] in new_circles:
             new_circles.remove(best_ball[0])
         if best_ball[1] in new_circles:
             new_circles.remove(best_ball[1])
+
+        # Determine if a ball has been seen inside the robot
+        if robot is not None:
+            coords = make_robot_square(robot)
+            poly = Polygon(coords)
+            for circle in new_circles:
+                p = Point(circle)
+                if p.within(poly):
+                    new_circles.remove(circle)
 
         if self.balls_close_enough(new_circles):
             self.balancer += 1
@@ -277,7 +286,7 @@ class Locator:
         if self.export is None:
             self.export = new_circles
 
-        return self.export, robot, orange
+        return self.export, robot, orange, frame
 
     # Determine whether the new circles are close enough to the old circles
     # to be considered the same.

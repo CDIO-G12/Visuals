@@ -14,6 +14,7 @@ class Database:
         self.orange = None
         self.robot_square = []
         self.oldGoal = None
+        self.sendBalls = 8
 
     # Check position of balls, robot, orange, corners, crosses and goal and send to MM (MiddleMan).
     def check_and_send(self, s, balls, robot, orange, corner_array, cross_array, goal):
@@ -31,18 +32,21 @@ class Database:
                     return False
 
         # Send balls to MM
-        if not np.array_equal(self.balls, balls):
-            self.balls = balls
-            success = u.send(s, "b/r/r")
-            if not success:
-                return False
-            for (x, y) in balls:
-                success = u.send(s, ("b/%d/%d" % (x, y)))
+        if self.sendBalls >= 10:
+            self.sendBalls = 0
+            if not np.array_equal(self.balls, balls):
+                self.balls = balls
+                success = u.send(s, "b/r/r")
                 if not success:
                     return False
-            success = u.send(s, "b/d/d")
-            if not success:
-                return False
+                for (x, y) in balls:
+                    success = u.send(s, ("b/%d/%d" % (x, y)))
+                    if not success:
+                        return False
+                success = u.send(s, "b/d/d")
+                if not success:
+                    return False
+        self.sendBalls += 1
 
         # Send orange to MM
         if self.orange != orange:

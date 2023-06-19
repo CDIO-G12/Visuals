@@ -1,7 +1,7 @@
 
 STREAM = False  # Set variable 'STREAM' to 'TRUE' to stream video
-RECORD = False  # Set variable 'RECORD' to 'TRUE' to record video
-VIDEO = True # Set env variable 'SOURCE' to 'VIDEO' if camera is not connected
+RECORD = True  # Set variable 'RECORD' to 'TRUE' to record video
+VIDEO = False # Set env variable 'SOURCE' to 'VIDEO' if camera is not connected
 
 draw_robot = True  # Set to true if robot should be drawn
 
@@ -26,7 +26,7 @@ BORDER = 10  # Border around the image.
 
 PERSPECTIVE_OFFSET = True  # Rectify the image for perspective offset.
 
-HOST = "localhost"  # The server's hostname or IP address
-#HOST = "192.168.0.102"  # The server's hostname or IP address
+#HOST = "localhost"  # The server's hostname or IP address
+HOST = "192.168.0.102"  # The server's hostname or IP address
 #HOST = "192.168.0.103"  # The Mark's hostname or IP address
 PORT = 8888  # The port used by the server

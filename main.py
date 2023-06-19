@@ -181,11 +181,9 @@ while True:
 
             # checks if we have found any circles
 
-            circles, robot, orange = locator.locate(hsv, gray, frame, area_border, find_orange)
+            circles, robot, orange, output = locator.locate(hsv, gray, output, area_border, find_orange)
             if circles is None and robot is None and orange is None:
                 continue
-
-            cv.imshow("output", output)
 
             # Check if robot is inside our borders
             if robot is not None and not [(0, 0), (0, 0)] and False:  # only check if currently have some coordinates
@@ -302,6 +300,7 @@ while True:
 
         cv.destroyAllWindows()
         out.release()
+        out_c.release()
 
     # When everything done, release the capture
     cap.release()
