@@ -53,11 +53,15 @@ def emergency(pPoint, gPoint, area_border):
 
 # Crop funktion to crop the sides off the video
 ORIGINAL_WIDTH = c.WIDTH
+ORIGINAL_HEIGHT = c.HEIGHT
 if c.CROP:  # check boolean
     # calculate new width
-    crop_width = c.WIDTH - c.CROP_AMOUNT
-    c.WIDTH -= c.CROP_AMOUNT * 2
+    crop_width_x = c.WIDTH - c.CROP_AMOUNT_X
+    c.WIDTH -= c.CROP_AMOUNT_X * 2
 
+    # calculate new height
+    crop_width_y = c.HEIGHT - c.CROP_AMOUNT_Y
+    c.HEIGHT -= c.CROP_AMOUNT_Y * 2
 
 
 # Main loop
@@ -89,7 +93,7 @@ while True:
 
         # Resolution
         cap.set(cv.CAP_PROP_FRAME_WIDTH, ORIGINAL_WIDTH)
-        cap.set(cv.CAP_PROP_FRAME_HEIGHT, c.HEIGHT)
+        cap.set(cv.CAP_PROP_FRAME_HEIGHT, ORIGINAL_HEIGHT)
         cap.set(cv.CAP_PROP_AUTO_EXPOSURE, 1)
         cap.set(cv.CAP_PROP_AUTOFOCUS, 0)
         if c.CONTRAST is not None:
@@ -100,7 +104,7 @@ while True:
         frame_height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
 
         # If expected resolution does not match actual resolution of camera, would effect calculations
-        if not VIDEO and (frame_width != ORIGINAL_WIDTH or frame_height != c.HEIGHT):
+        if not VIDEO and (frame_width != ORIGINAL_WIDTH or frame_height != ORIGINAL_HEIGHT):
             print("Error: Wrong resolution, got: " + str(frame_width) + "x" + str(frame_height) + ", expected: " + str(ORIGINAL_WIDTH) + "x" + str(c.HEIGHT))
             exit()
 
@@ -112,9 +116,9 @@ while True:
         # Define the codec and create VideoWriter object.The output is stored in 'output.avi' file.
         if c.RECORD:
             # Using datetime to create unique file names
-            out_c = cv.VideoWriter('recordings/outputCLEAN-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.avi',
+            out_c = cv.VideoWriter('recordings/outputCLEAN_' + datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + '.avi',
                                  cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
-            out = cv.VideoWriter('recordings/output-' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.avi',
+            out = cv.VideoWriter('recordings/output_' + datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + '.avi',
                                  cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
         else:
             out_c = cv.VideoWriter('recordings/outputCLEAN.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (c.WIDTH, c.HEIGHT))
@@ -135,13 +139,12 @@ while True:
 
 
             if c.CROP:  # Changes frames resolution to cropped resolution
-                frame = frame[:, c.CROP_AMOUNT:crop_width]
+                frame = frame[c.CROP_AMOUNT_Y:crop_width_y, c.CROP_AMOUNT_X:crop_width_x]
 
             # Our operations on the frame come here
             hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
             gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
             gray = cv.GaussianBlur(gray, (5, 5), 0)
-
 
 
             output = frame.copy()

@@ -95,7 +95,6 @@ class Borders:
         # red_edges = cv.cvtColor(frame2, cv.COLOR_BGR2GRAY)
         redEdges = frame2
 
-
         new_width = int(c.WIDTH/4)
         new_height = int(c.HEIGHT/3)
 
@@ -127,8 +126,8 @@ class Borders:
             1,  # Distance resolution in pixels
             np.pi / 180,  # Angle resolution in radians
             threshold=90,  # Min number of votes for valid line
-            minLineLength=95,  # Min allowed length of line
-            maxLineGap=30  # Max allowed gap between line for joining them
+            minLineLength=105,  # Min allowed length of line
+            maxLineGap=40  # Max allowed gap between line for joining them
         )
 
         if lines_for_borders is not None:

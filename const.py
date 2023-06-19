@@ -1,7 +1,7 @@
 
 STREAM = False  # Set variable 'STREAM' to 'TRUE' to stream video
-RECORD = True  # Set variable 'RECORD' to 'TRUE' to record video
-VIDEO = False # Set env variable 'SOURCE' to 'VIDEO' if camera is not connected
+RECORD = False  # Set variable 'RECORD' to 'TRUE' to record video
+VIDEO = True   # Set env variable 'SOURCE' to 'VIDEO' if camera is not connected
 
 draw_robot = True  # Set to true if robot should be drawn
 
@@ -19,7 +19,8 @@ HEIGHT = 1080
 CONTRAST = None
 
 CROP = True  # Crop the output image.
-CROP_AMOUNT = 150  #Amount of pixels to crop from each side.
+CROP_AMOUNT_X = 340  #Amount of pixels to crop from each side.
+CROP_AMOUNT_Y = 100  #Amount of pixels to crop from each top.
 
 CAM_HEIGHT = 150  # Height of the camera in cm.
 BORDER = 1  # Border around the image.

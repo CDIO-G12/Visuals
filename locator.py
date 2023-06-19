@@ -392,7 +392,7 @@ def gen_mask(frame, hue):  # TODO: Make this work.
     lower_hue = hue - 10
     upper_hue = hue + 10
 
-    if lower_hue < 0 or upper_hue > 100:
+    if lower_hue < 0 or upper_hue > 180:
         lower = np.array([0, MIN_SAT, 50], dtype="uint8")
         upper = np.array([10, 255, 255], dtype="uint8")
         mask1 = cv.inRange(frame, lower, upper)
