@@ -15,6 +15,8 @@ class Database:
         self.robot_square = []
         self.oldGoal = None
         self.sendBalls = 8
+        self.corners = []
+        self.cross = []
 
     # Check position of balls, robot, orange, corners, crosses and goal and send to MM (MiddleMan).
     def check_and_send(self, s, balls, robot, orange, corner_array, cross_array, goal):
@@ -64,7 +66,8 @@ class Database:
                 self.oldGoal = goal
                 u.send(s, "g/%d/%d" % (goal[0], goal[1]))
 
-        if corner_array is not None:
+        if len(self.corners) == len(corner_array) and self.corners is not corner_array:
+            self.corners = corner_array
             counter = 0
             for corner in corner_array:
                 if corner is None:
@@ -72,14 +75,14 @@ class Database:
                 u.send(s, "c/%d/%d/%d" % (counter, corner[0], corner[1]))
                 counter += 1
 
-        if cross_array is not None:
+        if len(self.cross) == len(cross_array) and self.cross is not cross_array:
+            self.cross = cross_array
             counter = 0
             for corner in cross_array:
                 if corner is None:
                     continue
                 u.send(s, "m/%d/%d/%d" % (counter, corner[0], corner[1]))
                 counter += 1
-
         return True
 
     # Highlight balls, robot, orange, corners, crosses and goal.

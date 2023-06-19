@@ -122,7 +122,7 @@ class Borders:
             maxLineGap=20  # Max allowed gap between line for joining them
         )
 
-        lines_for_cross = cv.HoughLinesP(
+        lines_for_cross = cv.HoughLinesP(  # TODO: Tune these parameters.
             cropped_cross,  # Input edge image
             1,  # Distance resolution in pixels
             np.pi / 180,  # Angle resolution in radians
@@ -196,7 +196,7 @@ class Borders:
                         self.check_point_in_cross((int(avg[0]), int(avg[1])))
 
         # check if all elements of self.cross_array are True using all()
-        if self.cross_array:
+        if self.cross_array: # TODO: Make this work properly.
             self.old_cross_array = self.cross_array
         else:
             self.cross_array = self.old_cross_array

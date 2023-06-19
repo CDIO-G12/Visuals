@@ -10,19 +10,12 @@ new = False
 state = 0
 data = [(), (), ()]
 
-# Set to true if camera not connected
-
-
-VIDEO = False
-VIDEOFILE = 'video/combined.mp4'
-
 # Getting correct camera source
 source = os.environ.get("SOURCE")
-VIDEO = False
 CAMERASOURCE = c.CAMERASOURCE
 if source is not None:
     if source.lower() == "video":
-        VIDEO = True
+        c.VIDEO = True
     else:
         CAMERASOURCE = int(source)
 
@@ -58,8 +51,8 @@ def avg_hsv(hsv, x, y):
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
 
-    if VIDEO:
-        cap = cv.VideoCapture(VIDEOFILE)
+    if c.VIDEO:
+        cap = cv.VideoCapture(c.VIDEOFILE)
     else:
         cap = cv.VideoCapture(CAMERASOURCE, cv.CAP_DSHOW)
 
@@ -82,22 +75,27 @@ if __name__ == '__main__':
     print("Started.\nPress Pink ball.")
 
     if c.CROP:
-        crop_width = c.WIDTH - c.CROP_AMOUNT
-        c.WIDTH -= c.CROP_AMOUNT * 2
+        # calculate new width
+        crop_width_x = c.WIDTH - c.CROP_AMOUNT_X
+        c.WIDTH -= c.CROP_AMOUNT_X * 2
+
+        # calculate new height
+        crop_width_y = c.HEIGHT - c.CROP_AMOUNT_Y
+        c.HEIGHT -= c.CROP_AMOUNT_Y * 2
     while True:
         # Capture frame-by-frame
         ret, frame = cap.read()
 
         # if frame is read correctly ret is True
         if not ret:
-            if VIDEO:
+            if c.VIDEO:
                 cap.set(cv.CAP_PROP_POS_FRAMES, 0)  # this make the video loop
                 continue
             print("Can't receive frame (stream end?). Exiting ...")
             exit()
 
         if c.CROP:
-            frame = frame[:, c.CROP_AMOUNT:crop_width]
+            frame = frame[c.CROP_AMOUNT_Y:crop_width_y, c.CROP_AMOUNT_X:crop_width_x]
 
         hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
@@ -124,7 +122,7 @@ if __name__ == '__main__':
                 print("Found green at: x %d, y &d - hsv:" % mouseX, mouseY, avg_hsv(hsv, mouseX, mouseY))
                 print("\nPlease find orange")
             elif state == 2:
-                print("Found orange at: x %d, y &d - hsv:" % mouseX, mouseY, avg_hsv(hsv, mouseX, mouseY))
+                print("Found orange at: x: ", mouseX, ", y: ", mouseY, " - hsv:", avg_hsv(hsv, mouseX, mouseY))
                 break
             else:
                 break

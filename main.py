@@ -76,7 +76,8 @@ while True:
         # If statement to decide wether to use a videofile or live camera
         if c.VIDEO or VIDEO:
             cap = cv.VideoCapture(c.VIDEOFILE)
-            c.CROP = True
+            c.CROP = False
+
         else:
             cap = cv.VideoCapture(CAMERASOURCE, cv.CAP_DSHOW)
 
@@ -132,6 +133,7 @@ while True:
                 print("Can't receive frame (stream end?). Exiting ...")
                 exit()
 
+
             if c.CROP:  # Changes frames resolution to cropped resolution
                 frame = frame[:, c.CROP_AMOUNT:crop_width]
 
@@ -139,6 +141,7 @@ while True:
             hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
             gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
             gray = cv.GaussianBlur(gray, (5, 5), 0)
+
 
 
             output = frame.copy()

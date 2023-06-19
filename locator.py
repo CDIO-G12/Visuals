@@ -131,18 +131,20 @@ class Locator:
 
     def locate(self, hsv, gray, frame, area_border, find_orange=True, ball_count=10):
         # print("MIN_SAT: " + str(MIN_SAT))
+        """
+        # TODO: Properly track colored circles, followed by white circles.
 
-        # coloured_balls_mask = gen_mask(hsv, PINK) | gen_mask(hsv, GREEN) | gen_mask(hsv, ORANGE)
-        #coloured_balls_mask_inverted = cv.bitwise_not(gen_mask(hsv, PINK) | gen_mask(hsv, GREEN) | gen_mask(hsv, ORANGE))
+        coloured_balls_mask = gen_mask(hsv, PINK) | gen_mask(hsv, GREEN) | gen_mask(hsv, ORANGE)
+        #coloured_balls_mask = gen_mask(hsv, GREEN) | gen_mask(hsv, ORANGE)
+        coloured_balls_mask_inverted = cv.bitwise_not(gen_mask(hsv, PINK) | gen_mask(hsv, GREEN) | gen_mask(hsv, ORANGE))
 
         # coloured_balls_frame = cv.bitwise_and(gray, gray, mask=coloured_balls_mask)
         #white_balls_frame = cv.bitwise_and(gray, gray, mask=coloured_balls_mask_inverted)
 
         # cv.imshow('colourball', coloured_balls_frame)
         # cv.imshow('whiteball', white_balls_frame)
-
-        temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 15, param1=50, param2=20, minRadius=7, maxRadius=15)
-        min_sat = 60
+        """
+        temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 15, param1=50, param2=20, minRadius=6, maxRadius=20)
         distances = ([])
         if temp_circles is None:
             return None, None, None
@@ -256,7 +258,6 @@ class Locator:
             #self.last_robot = robot
             if c.PERSPECTIVE_OFFSET and robot is not None:
                 robot = calculate_robot_position(robot)
-
 
         if best_ball[0] in new_circles:
             new_circles.remove(best_ball[0])
@@ -387,7 +388,7 @@ def is_close(point1, point2, thresh=5):
     dist = math.sqrt(x**2 + y**2)
     return dist < thresh
 
-def gen_mask(frame, hue):
+def gen_mask(frame, hue):  # TODO: Make this work.
     lower_hue = hue - 10
     upper_hue = hue + 10
 
@@ -402,7 +403,7 @@ def gen_mask(frame, hue):
         mask = mask1 | mask2
         return mask
     else:
-        lower = np.array([lower_hue, MIN_SAT, MIN_VAL], dtype="uint8")
+        lower = np.array([lower_hue, MIN_SAT-10, MIN_VAL], dtype="uint8")
         upper = np.array([upper_hue, 255, 255], dtype="uint8")
         mask = cv.inRange(frame, lower, upper)
         return mask
