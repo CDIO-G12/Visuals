@@ -80,8 +80,8 @@ if __name__ == '__main__':
         c.WIDTH -= c.CROP_AMOUNT_X * 2
 
         # calculate new height
-        crop_width_y = c.HEIGHT - c.CROP_AMOUNT_Y
-        c.HEIGHT -= c.CROP_AMOUNT_Y * 2
+        # crop_width_y = c.HEIGHT - c.CROP_AMOUNT_Y
+        # c.HEIGHT -= c.CROP_AMOUNT_Y * 2
     while True:
         # Capture frame-by-frame
         ret, frame = cap.read()

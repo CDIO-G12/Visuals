@@ -60,8 +60,8 @@ if c.CROP:  # check boolean
     c.WIDTH -= c.CROP_AMOUNT_X * 2
 
     # calculate new height
-    crop_width_y = c.HEIGHT - c.CROP_AMOUNT_Y
-    c.HEIGHT -= c.CROP_AMOUNT_Y * 2
+    # crop_width_y = c.HEIGHT - c.CROP_AMOUNT_Y
+    # c.HEIGHT -= c.CROP_AMOUNT_Y * 2
 
 
 # Main loop
@@ -139,12 +139,13 @@ while True:
 
 
             if c.CROP:  # Changes frames resolution to cropped resolution
-                frame = frame[c.CROP_AMOUNT_Y:crop_width_y, c.CROP_AMOUNT_X:crop_width_x]
+                # frame = frame[c.CROP_AMOUNT_Y:crop_width_y, c.CROP_AMOUNT_X:crop_width_x]
+                frame = frame[:, c.CROP_AMOUNT_X:crop_width_x]
 
             # Our operations on the frame come here
             hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
             gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-            gray = cv.GaussianBlur(gray, (7, 7), 0)
+            gray = cv.GaussianBlur(gray, (5, 5), 0)
 
             # cv.imshow("gray", gray)
 
