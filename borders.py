@@ -142,6 +142,9 @@ class Borders:
                 lines_list_borders.append([(x1, y1), (x2, y2)])
 
         if lines_for_cross is not None:
+            distances = np.linalg.norm(lines_for_cross[:, 0, :2] - lines_for_cross[:, 0, 2:], axis=1)
+            keep = distances <= 150
+            lines_for_cross = lines_for_cross[keep]
             # Iterate over points
             for points in lines_for_cross:
                 # Extracted points nested in the list

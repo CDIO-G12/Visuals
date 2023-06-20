@@ -95,12 +95,22 @@ if __name__ == '__main__':
             exit()
 
         if c.CROP:
-            frame = frame[c.CROP_AMOUNT_Y:crop_width_y, c.CROP_AMOUNT_X:crop_width_x]
+            frame = frame[:, c.CROP_AMOUNT_X:crop_width_x]
 
         hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
         cv.line(frame, (0, 0), (c.WIDTH, c.HEIGHT), (200, 200, 200), 2)
         cv.line(frame, (0, c.HEIGHT), (c.WIDTH, 0), (200, 200, 200), 2)
+        cv.circle(frame, (50, 40), 3, (0, 0, 0), 2)
+        cv.circle(frame, (c.WIDTH-50, 40), 3, (0, 0, 0), 2)
+        cv.circle(frame, (50, c.HEIGHT - 40), 3, (0, 0, 0), 2)
+        cv.circle(frame, (c.WIDTH-50, c.HEIGHT - 40), 3, (0, 0, 0), 2)
+
+        cv.line(frame, (50, 40), (c.WIDTH-50, 40), (100, 100, 100), 1)
+        cv.line(frame, (c.WIDTH-50, 40), (c.WIDTH-50, c.HEIGHT - 40), (100, 100, 100), 1)
+        cv.line(frame, (c.WIDTH-50, c.HEIGHT - 40), (50, c.HEIGHT - 40), (100, 100, 100), 1)
+        cv.line(frame, (50, c.HEIGHT - 40), (50, 40), (100, 100, 100), 1)
+
 
         cv.imshow("output", np.hstack([frame]))
 
@@ -116,10 +126,10 @@ if __name__ == '__main__':
 
             data[state] = (avg)
             if state == 0:
-                print("Found pink at: x %d, y &d - hsv:" % mouseX, mouseY, avg_hsv(hsv, mouseX, mouseY))
+                print("Found red at: x: ", mouseX, ", y: ", mouseY, " - hsv:", avg_hsv(hsv, mouseX, mouseY))
                 print("\nPlease find green")
             elif state == 1:
-                print("Found green at: x %d, y &d - hsv:" % mouseX, mouseY, avg_hsv(hsv, mouseX, mouseY))
+                print("Found green at: x: ", mouseX, ", y: ", mouseY, " - hsv:", avg_hsv(hsv, mouseX, mouseY))
                 print("\nPlease find orange")
             elif state == 2:
                 print("Found orange at: x: ", mouseX, ", y: ", mouseY, " - hsv:", avg_hsv(hsv, mouseX, mouseY))

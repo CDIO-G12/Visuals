@@ -34,7 +34,7 @@ class Database:
                     return False
 
         # Send balls to MM
-        if self.sendBalls >= 10:
+        if self.sendBalls >= 5:
             self.sendBalls = 0
             if not np.array_equal(self.balls, balls):
                 self.balls = balls
@@ -66,7 +66,7 @@ class Database:
                 self.oldGoal = goal
                 u.send(s, "g/%d/%d" % (goal[0], goal[1]))
 
-        if len(self.corners) == len(corner_array) and self.corners is not corner_array:
+        if len(cross_array) == 4 and self.corners is not corner_array:
             self.corners = corner_array
             counter = 0
             for corner in corner_array:
@@ -75,7 +75,7 @@ class Database:
                 u.send(s, "c/%d/%d/%d" % (counter, corner[0], corner[1]))
                 counter += 1
 
-        if len(self.cross) == len(cross_array) and self.cross is not cross_array:
+        if len(cross_array) == 4 and self.cross is not cross_array:
             self.cross = cross_array
             counter = 0
             for corner in cross_array:

@@ -144,10 +144,10 @@ class Locator:
         # cv.imshow('colourball', coloured_balls_frame)
         # cv.imshow('whiteball', white_balls_frame)
         """
-        temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 15, param1=50, param2=20, minRadius=6, maxRadius=20)
+        temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 15, param1=75, param2=25, minRadius=6, maxRadius=15)
         distances = ([])
         if temp_circles is None:
-            return None, None, None
+            return None, None, None, None
 
         circles = np.round(temp_circles[0, :]).astype("int")  # convert circles to ints
         new_circles = []
@@ -232,14 +232,6 @@ class Locator:
         else:
             self.orange_balancer = 0
 
-        if find_orange:
-            if best_ball[2] is not None:
-                self.old_orange = best_ball[2]
-                orange = best_ball[2]
-                new_circles.remove(best_ball[2])
-            elif self.orange_balancer < 3:
-                orange = self.old_orange
-
         robot = None
 
         # Calculate the best candidates for the pink and green ball, and calculate the robot position
@@ -272,6 +264,14 @@ class Locator:
                 p = Point(circle)
                 if p.within(poly):
                     new_circles.remove(circle)
+
+        if find_orange and best_ball[2] in new_circles:
+            if best_ball[2] is not None:
+                self.old_orange = best_ball[2]
+                orange = best_ball[2]
+                new_circles.remove(best_ball[2])
+            elif self.orange_balancer < 3:
+                orange = self.old_orange
 
         if self.balls_close_enough(new_circles):
             self.balancer += 1
