@@ -54,20 +54,13 @@ class Borders:
 
         return True
 
-    def crosses_close_enough(self): # TODO: Make this work reliably.
-        if self.old_cross_array is None:
-            return True
-        if not self.cross_array:
-            return False
+    def crosses_close_enough(self):
 
-        for (x1, y1) in self.cross_array:
-            match = False
-            for (x2, y2) in self.old_cross_array:
-                dist = np.abs(((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5)
-                if 10 >= dist:
-                    match = True
-                    break
-            if not match:
+        for i in range(4):
+            dist = np.abs(((self.old_cross_array[i][0] - self.cross_array[i][0]) ** 2 + (self.old_cross_array[i][1] - self.cross_array[i][1]) ** 2) ** 0.5)
+            print(dist)
+            if dist < 5 or dist > 20:
+                print("problem found")
                 return False
 
         return True
@@ -105,7 +98,7 @@ class Borders:
         edges = cv.GaussianBlur(edges, (5, 5), 0)
         cropped_cross = edges[new_height:new_height * 2, new_width:new_width * 3]
 
-        # cv.imshow("redEdges", cropped_cross)
+        cv.imshow("redEdges", cropped_cross)
 
         # Apply HoughLinesP method to
         # directly obtain line end points
@@ -130,6 +123,10 @@ class Borders:
             minLineLength=95,  # Min allowed length of line
             maxLineGap=30  # Max allowed gap between line for joining them
         )
+        if lines_for_cross is not None:
+            distances = np.linalg.norm(lines_for_cross[:, 0, :2] - lines_for_cross[:, 0, 2:], axis=1)
+            keep = distances <= 110
+            lines_for_cross = lines_for_cross[keep]
 
         if lines_for_borders is not None:
             # Iterate over points
@@ -159,8 +156,6 @@ class Borders:
                 cv.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 # Maintain a simples lookup list for points
                 lines_list_cross.append([(x1, y1), (x2, y2)])
-
-
 
         # Determine offsets
         upper = 0.025*c.HEIGHT
@@ -206,6 +201,7 @@ class Borders:
             self.old_cross_array = self.cross_array
         else:
             self.cross_array = self.old_cross_array
+
 
         # Calculate the average of the corners.
         corner_dict = {'UL': corner_UL_arr, 'UR': corner_UR_arr, 'LR': corner_LR_arr, 'LL': corner_LL_arr}
