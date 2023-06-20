@@ -264,6 +264,7 @@ class Locator:
             for circle in new_circles:
                 p = Point(circle)
                 if p.within(poly):
+                    # print("Ball inside robot")
                     new_circles.remove(circle)
 
         if find_orange and best_ball[2] in new_circles:
