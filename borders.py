@@ -14,16 +14,16 @@ class Borders:
 # Determine position of the cross in the middle of the field.
     def check_point_in_cross(self, avg):
         # min X
-        if self.cross_array[0] is None or self.cross_array[0][0] > avg[0]:
+        if self.cross_array[0] is None or self.cross_array[0][0] >= avg[0]:
             self.cross_array[0] = avg
         # max X
-        elif self.cross_array[1] is None or self.cross_array[1][0] < avg[0]:
+        elif self.cross_array[1] is None or self.cross_array[1][0] <= avg[0]:
             self.cross_array[1] = avg
         # min Y
-        elif self.cross_array[2] is None or self.cross_array[2][1] > avg[1]:
+        elif self.cross_array[2] is None or self.cross_array[2][1] >= avg[1]:
             self.cross_array[2] = avg
         # max Y
-        elif self.cross_array[3] is None or self.cross_array[3][1] < avg[1]:
+        elif self.cross_array[3] is None or self.cross_array[3][1] <= avg[1]:
             self.cross_array[3] = avg
 
     """""
@@ -44,7 +44,7 @@ class Borders:
         return True
     """
 
-    def borders_close_enough(self): # TODO: check if this works, reliably. Samuel pointed out that sometimes a corners is detected in (0, 0).
+    def borders_close_enough(self):
         if self.old_corners is None:
             return False
 
@@ -95,6 +95,7 @@ class Borders:
         # red_edges = cv.cvtColor(frame2, cv.COLOR_BGR2GRAY)
         redEdges = frame2
 
+        # cv.imshow("rededges", redEdges)
         new_width = int(c.WIDTH/4)
         new_height = int(c.HEIGHT/3)
 
@@ -121,7 +122,7 @@ class Borders:
             maxLineGap=20  # Max allowed gap between line for joining them
         )
 
-        lines_for_cross = cv.HoughLinesP(  # TODO: Tune these parameters.
+        lines_for_cross = cv.HoughLinesP(
             cropped_cross,  # Input edge image
             1,  # Distance resolution in pixels
             np.pi / 180,  # Angle resolution in radians
@@ -175,6 +176,8 @@ class Borders:
                 if y == x:
                     continue
                 intersect = line_intersection(x, y)
+                if intersect == (0, 0):
+                    continue
                 if right >= intersect[0] >= (right - interval) and lower >= intersect[1] >= (lower - interval):
                     corner_LR_arr.append((int(intersect[0]), int(intersect[1])))
 
@@ -198,7 +201,8 @@ class Borders:
                         self.check_point_in_cross((int(avg[0]), int(avg[1])))
 
         # check if all elements of self.cross_array are True using all()
-        if self.cross_array: # TODO: Make this work properly.
+
+        if all(self.cross_array) and (len(self.old_cross_array) < 1 or self.crosses_close_enough()):
             self.old_cross_array = self.cross_array
         else:
             self.cross_array = self.old_cross_array
