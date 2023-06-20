@@ -26,7 +26,7 @@ CAM_HEIGHT = 150  # Height of the camera in cm.
 ROBOT_HEIGHT = 15.5  # Height of the tracking point in cm.
 TRACKING_DISTANCE = 20.5 # Distance between the tracking points in cm.
 CAM_HEIGHT = 150  # Height of the camera in cm.
-BORDER = 10  # Border around the image.
+BORDER = 3 # How often the border will
 
 PERSPECTIVE_OFFSET = True  # Rectify the image for perspective offset.
 

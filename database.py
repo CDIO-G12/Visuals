@@ -13,7 +13,7 @@ class Database:
         self.pixel_dist = 0
         self.orange = None
         self.robot_square = []
-        self.oldGoal = None
+        self.oldGoal = [0, 0]
         self.sendBalls = 8
         self.corners = []
         self.cross = []
@@ -38,7 +38,7 @@ class Database:
         if balls is None:
             balls = []
         # Send balls to MM
-        if self.sendBalls >= 5:
+        if self.sendBalls >= 1:
             self.sendBalls = 0
             if not np.array_equal(self.balls, balls):
                 self.balls = balls
@@ -56,18 +56,17 @@ class Database:
 
         # Send orange to MM
         if self.orange is not None and orange is not None:
-            if abs(self.orange[0] - orange[0]) > 8 and abs(self.orange[1] - orange[1]) > 2:
-                if (orange == [0, 0] and self.orange [0, 0]) or orange != [0, 0]:
-                    success = u.send(s, "o/%d/%d" % (orange[0], orange[1]))
-                    if not success:
-                        return False
+            if (orange == [0, 0] and self.orange [0, 0]) or orange != [0, 0]:
+                success = u.send(s, "o/%d/%d" % (orange[0], orange[1]))
+                if not success:
+                    return False
         self.orange = orange
 
         if corner_array is None and cross_array is None and goal is None:
             return True
 
         if goal is not None:
-            if goal is not self.oldGoal:
+            if abs(self.oldGoal[0] - goal[0]) > 2 and (abs(self.oldGoal[1] - goal[1])) > 2:
                 self.oldGoal = goal
                 u.send(s, "g/%d/%d" % (goal[0], goal[1]))
 

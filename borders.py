@@ -58,9 +58,9 @@ class Borders:
 
         for i in range(4):
             dist = np.abs(((self.old_cross_array[i][0] - self.cross_array[i][0]) ** 2 + (self.old_cross_array[i][1] - self.cross_array[i][1]) ** 2) ** 0.5)
-            print(dist)
+            #print(dist)
             if dist < 5 or dist > 50:
-                print("problem found")
+                #print("problem found")
                 return False
 
         return True

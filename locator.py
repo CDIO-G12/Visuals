@@ -144,7 +144,6 @@ class Locator:
         # cv.imshow('colourball', coloured_balls_frame)
         # cv.imshow('whiteball', white_balls_frame)
         """
-        cv.imshow("gray", gray)
         temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 15, param1=50, param2=20, minRadius=6, maxRadius=15)
         distances = ([])
         if temp_circles is None:
