@@ -10,6 +10,10 @@ new = False
 state = 0
 data = [(), (), ()]
 
+red = 0
+orange = 20
+green = 50
+
 # Getting correct camera source
 source = os.environ.get("SOURCE")
 CAMERASOURCE = c.CAMERASOURCE
@@ -120,9 +124,10 @@ if __name__ == '__main__':
         if new:
             new = False
             avg = avg_hsv(hsv, mouseX, mouseY)
-            if avg[1] < 50:
+            """if avg[1] < 50:
                 print("Please try again..")
                 continue
+            """
 
             data[state] = (avg)
             if state == 0:

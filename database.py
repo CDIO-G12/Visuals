@@ -23,15 +23,17 @@ class Database:
 
         if self.robot is not robot and robot is not None:
             self.robot = robot
-            self.robot_pos = l.getAngleMidpointAndDist(robot)
-            success = u.send(s, ("r/%d/%d/%d" % (self.robot_pos[0], self.robot_pos[1], self.robot_pos[2])))
-            if not success:
-                return False
-            if self.pixel_dist != self.robot_pos[3]:
-                self.pixel_dist = self.robot_pos[3]
-                success = u.send(s, ("p/d/%f" % self.pixel_dist))
+            robot_pos = l.getAngleMidpointAndDist(robot)
+            if robot_pos != self.robot_pos:
+                self.robot_pos = robot_pos
+                success = u.send(s, ("r/%d/%d/%d" % (self.robot_pos[0], self.robot_pos[1], self.robot_pos[2])))
                 if not success:
                     return False
+                if abs(self.pixel_dist- self.robot_pos[3]) > 0:
+                    self.pixel_dist = self.robot_pos[3]
+                    success = u.send(s, ("p/d/%f" % self.pixel_dist))
+                    if not success:
+                        return False
 
         # Send balls to MM
         if self.sendBalls >= 5:
@@ -51,12 +53,13 @@ class Database:
         self.sendBalls += 1
 
         # Send orange to MM
-        if self.orange != orange:
-            self.orange = orange
-            if orange is not None:
-                success = u.send(s, "o/%d/%d" % (orange[0], orange[1]))
-                if not success:
-                    return False
+        if self.orange is not None and orange is not None:
+            if abs(self.orange[0] - orange[0]) > 8 and abs(self.orange[1] - orange[1]) > 2:
+                if (orange == [0, 0] and self.orange [0, 0]) or orange != [0, 0]:
+                    success = u.send(s, "o/%d/%d" % (orange[0], orange[1]))
+                    if not success:
+                        return False
+        self.orange = orange
 
         if corner_array is None and cross_array is None and goal is None:
             return True

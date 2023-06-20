@@ -222,6 +222,7 @@ while True:
                 spl = data.decode().split("\n")
                 for parts in spl:
                     if parts.startswith("no"):
+                        print("NO recieved")
                         find_orange = False
                         continue
 
@@ -274,9 +275,9 @@ while True:
                                cv.LINE_AA)
 
             if len(guideCorners) == 4 and guideCorners[0] != ():
-                cv.line(output, guideCorners[0], guideCorners[1], (200, 200, 200), 1)
-                cv.line(output, guideCorners[1], guideCorners[2], (200, 200, 200), 1)
-                cv.line(output, guideCorners[2], guideCorners[3], (200, 200, 200), 1)
+                cv.line(output, guideCorners[0], guideCorners[2], (200, 200, 200), 1)
+                cv.line(output, guideCorners[2], guideCorners[1], (200, 200, 200), 1)
+                cv.line(output, guideCorners[1], guideCorners[3], (200, 200, 200), 1)
                 cv.line(output, guideCorners[3], guideCorners[0], (200, 200, 200), 1)
 
 
