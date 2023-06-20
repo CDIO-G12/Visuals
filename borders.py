@@ -59,7 +59,7 @@ class Borders:
         for i in range(4):
             dist = np.abs(((self.old_cross_array[i][0] - self.cross_array[i][0]) ** 2 + (self.old_cross_array[i][1] - self.cross_array[i][1]) ** 2) ** 0.5)
             print(dist)
-            if dist < 5 or dist > 20:
+            if dist < 5 or dist > 50:
                 print("problem found")
                 return False
 
@@ -77,10 +77,10 @@ class Borders:
         #frame = cv.medianBlur(frame, 11)
         #Initialize the upper and lower boundaries of the "orange" in the HSV color space
         lower = np.array([0, 120, 50], dtype="uint8")
-        upper = np.array([15, 255, 255], dtype="uint8")
+        upper = np.array([10, 255, 255], dtype="uint8")
         mask1 = cv.inRange(hsv, lower, upper)
 
-        lower = np.array([165, 120, 50], dtype="uint8")
+        lower = np.array([170, 120, 50], dtype="uint8")
         upper = np.array([180, 255, 255], dtype="uint8")
         mask2 = cv.inRange(hsv, lower, upper)
         mask = mask1 | mask2
@@ -91,7 +91,7 @@ class Borders:
         # cv.imshow("rededges", redEdges)
         new_width = int(c.WIDTH/4)
         new_height = int(c.HEIGHT/3)
-
+        redEdges = cv.GaussianBlur(redEdges, (7, 7), 0)
 
         # Use canny edge detection
         edges = cv.Canny(redEdges, 50, 150, apertureSize=3)
@@ -106,6 +106,14 @@ class Borders:
         lines_list_borders = []
         lines_list_cross = []
 
+        # Determine offsets
+        upper = 0.025 * c.HEIGHT
+        lower = 1 * c.HEIGHT
+        left = 0.025 * c.WIDTH
+        right = 0.98 * c.WIDTH
+        interval = 50
+        offset = 20
+
         lines_for_borders = cv.HoughLinesP(
             edges,  # Input edge image
             1,  # Distance resolution in pixels
@@ -114,19 +122,6 @@ class Borders:
             minLineLength=200,  # Min allowed length of line
             maxLineGap=20  # Max allowed gap between line for joining them
         )
-
-        lines_for_cross = cv.HoughLinesP(
-            cropped_cross,  # Input edge image
-            1,  # Distance resolution in pixels
-            np.pi / 180,  # Angle resolution in radians
-            threshold=90,  # Min number of votes for valid line
-            minLineLength=95,  # Min allowed length of line
-            maxLineGap=30  # Max allowed gap between line for joining them
-        )
-        if lines_for_cross is not None:
-            distances = np.linalg.norm(lines_for_cross[:, 0, :2] - lines_for_cross[:, 0, 2:], axis=1)
-            keep = distances <= 110
-            lines_for_cross = lines_for_cross[keep]
 
         if lines_for_borders is not None:
             # Iterate over points
@@ -139,31 +134,58 @@ class Borders:
                 # Maintain a simples lookup list for points
                 lines_list_borders.append([(x1, y1), (x2, y2)])
 
-        if lines_for_cross is not None:
-            distances = np.linalg.norm(lines_for_cross[:, 0, :2] - lines_for_cross[:, 0, 2:], axis=1)
-            keep = distances <= 110
-            lines_for_cross = lines_for_cross[keep]
-            # Iterate over points
-            for points in lines_for_cross:
-                # Extracted points nested in the list
-                x1, y1, x2, y2 = points[0]
-                # Draw the lines joining the points
-                # On the original image
-                x1 += new_width
-                x2 += new_width
-                y1 += new_height
-                y2 += new_height
-                cv.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                # Maintain a simples lookup list for points
-                lines_list_cross.append([(x1, y1), (x2, y2)])
+        threshold_arr = [80, 70]
+        minLineLength_arr = [90, 75]
+        maxLineGap_arr = [40, 50]
 
-        # Determine offsets
-        upper = 0.025*c.HEIGHT
-        lower = 1*c.HEIGHT
-        left = 0.025*c.WIDTH 
-        right = 0.98*c.WIDTH
-        interval = 50
-        offset = 20
+        for i in range(2):
+            self.cross_array = [None] * 4
+            lines_for_cross = cv.HoughLinesP(
+                cropped_cross,  # Input edge image
+                1,  # Distance resolution in pixels
+                np.pi / 180,  # Angle resolution in radians
+                threshold=threshold_arr[i],  # Min number of votes for valid line
+                minLineLength=minLineLength_arr[i],  # Min allowed length of line
+                maxLineGap=maxLineGap_arr[i]  # Max allowed gap between line for joining them
+            )
+            if lines_for_cross is not None:
+                distances = np.linalg.norm(lines_for_cross[:, 0, :2] - lines_for_cross[:, 0, 2:], axis=1)
+                keep = distances <= 120
+                lines_for_cross = lines_for_cross[keep]
+                # Iterate over points
+                for points in lines_for_cross:
+                    # Extracted points nested in the list
+                    x1, y1, x2, y2 = points[0]
+                    # Draw the lines joining the points
+                    # On the original image
+                    x1 += new_width
+                    x2 += new_width
+                    y1 += new_height
+                    y2 += new_height
+                    cv.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                    # Maintain a simples lookup list for points
+                    lines_list_cross.append([(x1, y1), (x2, y2)])
+
+            for x in lines_list_cross:
+                for y in lines_list_cross:
+                    if y == x:
+                        continue
+                    points = {0: [x[0], y[0]], 1: [x[1], y[1]]}
+                    for key, value in points.items():
+                        if math.dist(value[0], value[1]) <= offset:
+                            avg = np.mean(value, axis=0)
+                            self.check_point_in_cross((int(avg[0]), int(avg[1])))
+            if not all(self.cross_array):
+                break
+
+
+
+        # check if all elements of self.cross_array are True using all()
+
+        if all(self.cross_array) and (len(self.old_cross_array) < 1 or self.crosses_close_enough()):
+            self.old_cross_array = self.cross_array
+        else:
+            self.cross_array = self.old_cross_array
 
         # Where borderlines intersect, draw edges.
         for x in lines_list_borders:
@@ -184,24 +206,6 @@ class Borders:
 
                 elif (left+interval) >= intersect[0] >= left and lower >= intersect[1] >= (lower - interval):
                     corner_LL_arr.append((int(intersect[0]), int(intersect[1])))
-
-        for x in lines_list_cross:
-            for y in lines_list_cross:
-                if y == x:
-                    continue
-                points = {0: [x[0], y[0]], 1: [x[1], y[1]]}
-                for key, value in points.items():
-                    if math.dist(value[0], value[1]) <= offset:
-                        avg = np.mean(value, axis=0)
-                        self.check_point_in_cross((int(avg[0]), int(avg[1])))
-
-        # check if all elements of self.cross_array are True using all()
-
-        if all(self.cross_array) and (len(self.old_cross_array) < 1 or self.crosses_close_enough()):
-            self.old_cross_array = self.cross_array
-        else:
-            self.cross_array = self.old_cross_array
-
 
         # Calculate the average of the corners.
         corner_dict = {'UL': corner_UL_arr, 'UR': corner_UR_arr, 'LR': corner_LR_arr, 'LL': corner_LL_arr}
