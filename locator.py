@@ -181,15 +181,6 @@ class Locator:
                 continue
 
             cv.circle(frame, (x, y), r, (125, 125, 125), 2)
-
-            # Determine if a ball is seen outside borders
-            """if area_border is not None:
-                p = Point(x, y)
-                if not p.within(area_border):
-                    pass
-                    #continue
-            """
-
             new_circles.append((x, y))
 
             # White ball found
@@ -264,6 +255,14 @@ class Locator:
             for circle in new_circles:
                 p = Point(circle)
                 if p.within(poly):
+                    # print("Ball inside robot")
+                    new_circles.remove(circle)
+
+        # Determine if a ball is seen outside borders
+        if area_border is not None:
+            for circle in circles:
+                p = Point(circle)
+                if not p.within(area_border):
                     new_circles.remove(circle)
 
         if find_orange and best_ball[2] in new_circles:
