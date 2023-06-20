@@ -74,6 +74,8 @@ class Borders:
         corner_UL_arr = []
         corner_UR_arr = []
 
+        new_width = int(c.WIDTH/5)
+        new_height = int(c.HEIGHT/6)
         #frame = cv.medianBlur(frame, 11)
         #Initialize the upper and lower boundaries of the "orange" in the HSV color space
         lower = np.array([0, 120, 50], dtype="uint8")
@@ -88,10 +90,22 @@ class Borders:
         # red_edges = cv.cvtColor(frame2, cv.COLOR_BGR2GRAY)
         redEdges = frame2
 
+
+        gray_edges = cv.cvtColor(redEdges, cv.COLOR_BGR2GRAY)
+        cropped_edges = gray_edges[new_height:new_height * 5, new_width:new_width * 4]
+        cropped_view = cv.GaussianBlur(cropped_edges, (5, 5), 0)
+
+        #dst = cv.cornerHarris(cropped_view, 2, 3, 0.04)
+        #dst = cv.dilate(dst, None)
+        cv.imshow("gray_edges", cropped_view)
+
+
+
         # cv.imshow("rededges", redEdges)
-        new_width = int(c.WIDTH/4)
-        new_height = int(c.HEIGHT/3)
-        redEdges = cv.GaussianBlur(redEdges, (7, 7), 0)
+
+
+        redEdges = cv.GaussianBlur(redEdges, (5, 5), 0)
+
 
         # Use canny edge detection
         edges = cv.Canny(redEdges, 50, 150, apertureSize=3)
@@ -135,7 +149,7 @@ class Borders:
                 lines_list_borders.append([(x1, y1), (x2, y2)])
 
         threshold_arr = [80, 70]
-        minLineLength_arr = [90, 75]
+        minLineLength_arr = [90, 70]
         maxLineGap_arr = [40, 50]
 
         for i in range(2):
