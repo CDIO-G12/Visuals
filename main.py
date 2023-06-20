@@ -142,8 +142,9 @@ while True:
                 # frame = frame[c.CROP_AMOUNT_Y:crop_width_y, c.CROP_AMOUNT_X:crop_width_x]
                 frame = frame[:, c.CROP_AMOUNT_X:crop_width_x]
 
+            blurred = cv.GaussianBlur(frame, (5, 5), 0)
             # Our operations on the frame come here
-            hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
+            hsv = cv.cvtColor(blurred, cv.COLOR_BGR2HSV)
             gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
             gray = cv.GaussianBlur(gray, (5, 5), 0)
 

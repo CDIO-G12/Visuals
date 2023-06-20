@@ -38,7 +38,7 @@ class Database:
         if balls is None:
             balls = []
         # Send balls to MM
-        if self.sendBalls >= 1:
+        if self.sendBalls >= 2:
             self.sendBalls = 0
             if not np.array_equal(self.balls, balls):
                 self.balls = balls
@@ -56,7 +56,7 @@ class Database:
 
         # Send orange to MM
         if self.orange is not None and orange is not None:
-            if (orange == [0, 0] and self.orange [0, 0]) or orange != [0, 0]:
+            if (orange == [0, 0] and self.orange == [0, 0]) or orange != [0, 0]:
                 success = u.send(s, "o/%d/%d" % (orange[0], orange[1]))
                 if not success:
                     return False

@@ -198,8 +198,8 @@ class Locator:
 
             # Calculate distance to the different colours, effectively determining which
             # ball is the best match for the different coloured balls
-            p_dist = hsv_distance_from_hue(hue_avg, PINK) + ((255-sat_avg)/10)
-            g_dist = hsv_distance_from_hue(hue_avg, GREEN) + ((255-sat_avg)/10)
+            p_dist = hsv_distance_from_hue(hue_avg, PINK) + ((255-sat_avg)/5)
+            g_dist = hsv_distance_from_hue(hue_avg, GREEN) + ((255-sat_avg)/5)
             if find_orange:  # If we have not found an orange ball yet
                 o_dist = hsv_distance_from_hue(hue_avg, ORANGE) + ((255-sat_avg)/5)
             else:
