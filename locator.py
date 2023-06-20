@@ -4,7 +4,7 @@ import const as c
 import cv2 as cv
 from shapely.geometry import Point, Polygon
 
-PINK = 180
+PINK = 0
 GREEN = 50
 ORANGE = 20
 MIN_SAT = 50
