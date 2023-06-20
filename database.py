@@ -71,7 +71,7 @@ class Database:
                 self.oldGoal = goal
                 u.send(s, "g/%d/%d" % (goal[0], goal[1]))
 
-        if len(cross_array) == 4 and self.corners is not corner_array:
+        if len(corner_array) == 4 and self.corners is not corner_array:
             self.corners = corner_array
             counter = 0
             for corner in corner_array:

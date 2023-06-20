@@ -38,8 +38,8 @@ def read_settings():
         if MIN_SAT < 50:
             MIN_SAT = 50
         MIN_VAL = int(val*0.7)
-        if MIN_VAL < 50:
-            MIN_VAL = 50
+        if MIN_VAL > 100:
+            MIN_VAL = 100
 
         print("Got PGO values from Settings.csv")
     except FileNotFoundError:
@@ -49,9 +49,9 @@ def read_settings():
 # Calculate the position of the robot.
 def calculate_robot_position(robot):
     # Constants
-    robot_dist_cm = 18.5  # cm distance between circles on robot
+    robot_dist_cm = c.TRACKING_DISTANCE  # cm distance between circles on robot
     cam_height = c.CAM_HEIGHT  # Camera height in cm, from ground
-    robot_height = 9.5  # Robot height in cm, from ground
+    robot_height = c.ROBOT_HEIGHT - 2  # Robot height in cm, from ground
 
     # Calculate pixel ratio
     if robot is None:
@@ -144,7 +144,8 @@ class Locator:
         # cv.imshow('colourball', coloured_balls_frame)
         # cv.imshow('whiteball', white_balls_frame)
         """
-        temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 15, param1=75, param2=25, minRadius=6, maxRadius=15)
+        cv.imshow("gray", gray)
+        temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 15, param1=50, param2=20, minRadius=6, maxRadius=15)
         distances = ([])
         if temp_circles is None:
             return None, None, None, None
@@ -177,17 +178,18 @@ class Locator:
             #print((x, y, r), (hue_avg, sat_avg, val_avg), MIN_SAT)
 
             # White ball found
-            if val_avg < 150:
+            if val_avg < MIN_VAL:
                 continue
 
             cv.circle(frame, (x, y), r, (125, 125, 125), 2)
 
             # Determine if a ball is seen outside borders
-            if area_border is not None:
+            """if area_border is not None:
                 p = Point(x, y)
                 if not p.within(area_border):
                     pass
                     #continue
+            """
 
             new_circles.append((x, y))
 
@@ -200,7 +202,7 @@ class Locator:
             p_dist = hsv_distance_from_hue(hue_avg, PINK) + ((255-sat_avg)/10)
             g_dist = hsv_distance_from_hue(hue_avg, GREEN) + ((255-sat_avg)/10)
             if find_orange:  # If we have not found an orange ball yet
-                o_dist = hsv_distance_from_hue(hue_avg, ORANGE) + ((255-sat_avg)/10)
+                o_dist = hsv_distance_from_hue(hue_avg, ORANGE) + ((255-sat_avg)/5)
             else:
                 o_dist = 9999
 
@@ -328,33 +330,6 @@ class Locator:
 def hsv_distance_from_hue(hsv_hue, hue):
     dist = min(abs(hsv_hue - hue), abs(hsv_hue - (hue - 180)))
     return dist
-
-# Determine whether ball is white.
-def is_ball(hsv, sat):
-    #print(hsv)
-    return hsv[1] < 20 and hsv[2] > 200
-
-
-# Determine whether ball is orange.
-def is_orange_ball(hsv):
-    threshold_range = 20
-    orange = 30
-    return (orange - threshold_range) < hsv[0] < (orange + threshold_range) and hsv[1] > 50 and hsv[2] > 150
-
-
-# Track position of pink guide circle.
-def is_robot_left(hsv):
-    threshold_range = 10
-    pink = 160
-    return (pink - threshold_range) < hsv[0] < (pink + threshold_range) and hsv[1] > 80 and hsv[2] > 127
-
-
-# Track position of green guide circle.
-def is_robot_right(hsv):
-    threshold_range = 20
-    green = 82
-    #print(hsv)
-    return (green - threshold_range) < hsv[0] < (green + threshold_range) and hsv[1] > 60 and hsv[2] > 127
 
 
 # Calculate the angle and position of the robot based on the position of the balls

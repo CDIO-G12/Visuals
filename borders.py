@@ -98,7 +98,7 @@ class Borders:
         edges = cv.GaussianBlur(edges, (5, 5), 0)
         cropped_cross = edges[new_height:new_height * 2, new_width:new_width * 3]
 
-        cv.imshow("redEdges", cropped_cross)
+        #cv.imshow("redEdges", cropped_cross)
 
         # Apply HoughLinesP method to
         # directly obtain line end points
