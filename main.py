@@ -219,7 +219,7 @@ while True:
                 first = True
                 spl = data.decode().split("\n")
                 for parts in spl:
-                    if parts.startswith("no"):
+                    if parts == "no":
                         print("NO recieved")
                         find_orange = False
                         continue

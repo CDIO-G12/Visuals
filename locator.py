@@ -7,8 +7,9 @@ from shapely.geometry import Point, Polygon
 PINK = 0
 GREEN = 50
 ORANGE = 20
-MIN_SAT = 50
+MIN_SAT = 35
 MIN_VAL = 75
+ORANGE_SAT = 100
 
 # Function to get settings values from our calibrator.
 def read_settings():
@@ -32,11 +33,12 @@ def read_settings():
                 GREEN = line[0]
             elif i == 2:
                 ORANGE = line[0]
+                ORANGE_SAT = line[1]-20
                 break
             i += 1
         MIN_SAT = int(sat*0.7)
         if MIN_SAT < 50:
-            MIN_SAT = 50
+            MIN_SAT = 35
         MIN_VAL = int(val*0.7)
         if MIN_VAL > 100:
             MIN_VAL = 100
@@ -181,20 +183,25 @@ class Locator:
                 continue
 
             cv.circle(frame, (x, y), r, (125, 125, 125), 2)
-            new_circles.append((x, y))
+            if r < 12:
+                new_circles.append((x, y))
 
             # White ball found
             if sat_avg < MIN_SAT:
                 continue
 
+            radius = 1000
+            if r > 12:
+                radius = 0
+
             # Calculate distance to the different colours, effectively determining which
             # ball is the best match for the different coloured balls
-            p_dist = hsv_distance_from_hue(hue_avg, PINK) + ((255-sat_avg)/5)
-            g_dist = hsv_distance_from_hue(hue_avg, GREEN) + ((255-sat_avg)/5)
-            if find_orange:  # If we have not found an orange ball yet
-                o_dist = hsv_distance_from_hue(hue_avg, ORANGE) + ((255-sat_avg)/5)
+            p_dist = hsv_distance_from_hue(hue_avg, PINK) + ((255-sat_avg)/5) + radius
+            g_dist = hsv_distance_from_hue(hue_avg, GREEN) + ((255-sat_avg)/5) + radius
+            if find_orange and sat_avg > ORANGE_SAT:  # If we have not found an orange ball yet
+                o_dist = hsv_distance_from_hue(hue_avg, ORANGE) + ((255-sat_avg)/5) + (1000 - radius)
             else:
-                o_dist = 9999
+                o_dist = 999999999999
 
             # Calculating which dist is smallest, so that we can determine which colour it fits best
             m = min(p_dist, g_dist, o_dist)
@@ -260,7 +267,7 @@ class Locator:
 
         # Determine if a ball is seen outside borders
         if area_border is not None:
-            for circle in circles:
+            for circle in new_circles:
                 p = Point(circle)
                 if not p.within(area_border):
                     new_circles.remove(circle)

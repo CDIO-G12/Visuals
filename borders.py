@@ -78,11 +78,11 @@ class Borders:
         new_height = int(c.HEIGHT/6)
         #frame = cv.medianBlur(frame, 11)
         #Initialize the upper and lower boundaries of the "orange" in the HSV color space
-        lower = np.array([0, 120, 50], dtype="uint8")
-        upper = np.array([10, 255, 255], dtype="uint8")
+        lower = np.array([0, 170, 170], dtype="uint8")
+        upper = np.array([5, 255, 255], dtype="uint8")
         mask1 = cv.inRange(hsv, lower, upper)
 
-        lower = np.array([170, 120, 50], dtype="uint8")
+        lower = np.array([175, 170, 170], dtype="uint8")
         upper = np.array([180, 255, 255], dtype="uint8")
         mask2 = cv.inRange(hsv, lower, upper)
         mask = mask1 | mask2
@@ -93,7 +93,7 @@ class Borders:
 
         gray_edges = cv.cvtColor(redEdges, cv.COLOR_BGR2GRAY)
         cropped_edges = gray_edges[new_height:new_height * 5, new_width:new_width * 4]
-        cropped_view = cv.GaussianBlur(cropped_edges, (5, 5), 0)
+        cropped_view = cv.GaussianBlur(cropped_edges, (3, 3), 0)
 
         #dst = cv.cornerHarris(cropped_view, 2, 3, 0.04)
         #dst = cv.dilate(dst, None)
@@ -110,7 +110,8 @@ class Borders:
         # Use canny edge detection
         edges = cv.Canny(redEdges, 50, 150, apertureSize=3)
         edges = cv.GaussianBlur(edges, (5, 5), 0)
-        cropped_cross = edges[new_height:new_height * 2, new_width:new_width * 3]
+        #cropped_cross = edges[new_height:new_height * 2, new_width:new_width * 3]
+        cropped_cross = cropped_view
 
         #cv.imshow("redEdges", cropped_cross)
 
