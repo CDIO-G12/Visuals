@@ -35,6 +35,8 @@ class Database:
                     if not success:
                         return False
 
+        if balls is None:
+            balls = []
         # Send balls to MM
         if self.sendBalls >= 5:
             self.sendBalls = 0

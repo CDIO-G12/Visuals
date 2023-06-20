@@ -206,9 +206,6 @@ while True:
                     exclamation = False
                     print("good to go")
 
-            if circles is None:
-                continue
-
             # send data to middleman.
             success = database.check_and_send(s, circles, robot, orange, corner_array, cross_array, goal)
             if not success:
