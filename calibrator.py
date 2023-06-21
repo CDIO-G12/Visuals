@@ -8,7 +8,7 @@ mouseX = None
 mouseY = None
 new = False
 state = 0
-data = [(), (), ()]
+data = [(), (), (), (), (), (), ()]
 
 red = 0
 orange = 20
@@ -129,7 +129,7 @@ if __name__ == '__main__':
                 continue
             """
 
-            data[state] = (avg)
+            data[state] = (avg[0], avg[1], avg[2], mouseX, mouseY)
             if state == 0:
                 print("Found red at: x: ", mouseX, ", y: ", mouseY, " - hsv:", avg_hsv(hsv, mouseX, mouseY))
                 print("\nPlease find green")
@@ -138,6 +138,18 @@ if __name__ == '__main__':
                 print("\nPlease find orange")
             elif state == 2:
                 print("Found orange at: x: ", mouseX, ", y: ", mouseY, " - hsv:", avg_hsv(hsv, mouseX, mouseY))
+                print("\nPlease find left")
+            elif state == 3:
+                print("Found left at: x: ", mouseX, ", y: ", mouseY, " - hsv:", avg_hsv(hsv, mouseX, mouseY))
+                print("\nPlease find right")
+            elif state == 4:
+                print("Found right at: x: ", mouseX, ", y: ", mouseY, " - hsv:", avg_hsv(hsv, mouseX, mouseY))
+                print("\nPlease find up")
+            elif state == 5:
+                print("Found up at: x: ", mouseX, ", y: ", mouseY, " - hsv:", avg_hsv(hsv, mouseX, mouseY))
+                print("\nPlease find down")
+            elif state == 6:
+                print("Found down at: x: ", mouseX, ", y: ", mouseY, " - hsv:", avg_hsv(hsv, mouseX, mouseY))
                 break
             else:
                 break

@@ -97,7 +97,7 @@ class Borders:
 
         #dst = cv.cornerHarris(cropped_view, 2, 3, 0.04)
         #dst = cv.dilate(dst, None)
-        cv.imshow("gray_edges", cropped_view)
+        #cv.imshow("gray_edges", cropped_view)
 
 
 

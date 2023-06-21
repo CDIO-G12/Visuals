@@ -4,9 +4,41 @@ import cv2 as cv
 import locator as l
 import const as c
 
+LEFT = (0, 0)
+RIGHT = (0, 0)
+UP = (0, 0)
+DOWN = (0, 0)
+
+def read_settings_corners():
+    global LEFT, RIGHT, UP, DOWN
+
+    try:
+        arr = np.loadtxt("settings.csv",
+                         delimiter=",", dtype=int)
+
+        i = 0
+        for line in arr:
+            if i == 3:
+                LEFT = (line[3], line[4])
+            elif i == 4:
+                RIGHT = (line[3], line[4])
+            elif i == 5:
+                UP = (line[3], line[4])
+            elif i == 6:
+                DOWN = (line[3], line[4])
+                break
+            i += 1
+
+        print("Got LRUD values from Settings.csv")
+    except FileNotFoundError:
+        pass
+
+
+
 # Init databese
 class Database:
     def __init__(self):
+        read_settings_corners()
         self.balls = []
         self.robot = []
         self.robot_pos = None
@@ -16,7 +48,8 @@ class Database:
         self.oldGoal = [0, 0]
         self.sendBalls = 8
         self.corners = []
-        self.cross = []
+        self.cross = [LEFT, RIGHT, UP, DOWN]
+
 
     # Check position of balls, robot, orange, corners, crosses and goal and send to MM (MiddleMan).
     def check_and_send(self, s, balls, robot, orange, corner_array, cross_array, goal):
@@ -79,6 +112,10 @@ class Database:
                 u.send(s, "c/%d/%d/%d" % (counter, corner[0], corner[1]))
                 counter += 1
 
+        if len(cross_array) != 4:
+            cross_array = self.cross
+            self.cross = []
+
         if len(cross_array) == 4 and self.cross is not cross_array:
             self.cross = cross_array
             counter = 0
@@ -98,9 +135,14 @@ class Database:
         for ball in self.balls:
             cv.circle(frame, ball, 3, (40, 140, 0), 2)
 
+        if self.cross is not None:
+            for point in self.cross:
+                cv.circle(frame, point, 1, (255, 255, 0), 1)
+
         if self.robot_pos is None:
             return
         pos = self.robot_pos
+
 
         if c.draw_robot:
             cv.circle(frame, (self.robot[0][0], self.robot[0][1]), 4, (187, 255, 0), 2)

@@ -40,8 +40,8 @@ def read_settings():
         if MIN_SAT < 50:
             MIN_SAT = 35
         MIN_VAL = int(val*0.7)
-        if MIN_VAL > 100:
-            MIN_VAL = 100
+        if MIN_VAL > 75:
+            MIN_VAL = 75
 
         print("Got PGO values from Settings.csv")
     except FileNotFoundError:
@@ -133,20 +133,9 @@ class Locator:
 
     def locate(self, hsv, gray, frame, area_border, find_orange=True, ball_count=10):
         # print("MIN_SAT: " + str(MIN_SAT))
-        """
-        # TODO: Properly track colored circles, followed by white circles.
+        tracking_size = 12
 
-        coloured_balls_mask = gen_mask(hsv, PINK) | gen_mask(hsv, GREEN) | gen_mask(hsv, ORANGE)
-        #coloured_balls_mask = gen_mask(hsv, GREEN) | gen_mask(hsv, ORANGE)
-        coloured_balls_mask_inverted = cv.bitwise_not(gen_mask(hsv, PINK) | gen_mask(hsv, GREEN) | gen_mask(hsv, ORANGE))
-
-        # coloured_balls_frame = cv.bitwise_and(gray, gray, mask=coloured_balls_mask)
-        #white_balls_frame = cv.bitwise_and(gray, gray, mask=coloured_balls_mask_inverted)
-
-        # cv.imshow('colourball', coloured_balls_frame)
-        # cv.imshow('whiteball', white_balls_frame)
-        """
-        temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 15, param1=50, param2=20, minRadius=6, maxRadius=15)
+        temp_circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 15, param1=60, param2=20, minRadius=8, maxRadius=16)
         distances = ([])
         if temp_circles is None:
             return None, None, None, None
@@ -179,25 +168,26 @@ class Locator:
             #print((x, y, r), (hue_avg, sat_avg, val_avg), MIN_SAT)
 
             # White ball found
-            if val_avg < MIN_VAL:
+            if val_avg < MIN_VAL and r < tracking_size:
                 continue
 
             cv.circle(frame, (x, y), r, (125, 125, 125), 2)
-            if r < 12:
-                new_circles.append((x, y))
+            print(hue_avg, sat_avg, val_avg, r)
+            new_circles.append((x, y))
 
             # White ball found
-            if sat_avg < MIN_SAT:
+            if sat_avg < MIN_SAT and r < tracking_size:
                 continue
 
             radius = 1000
-            if r > 12:
+            if r > tracking_size:
                 radius = 0
+
 
             # Calculate distance to the different colours, effectively determining which
             # ball is the best match for the different coloured balls
-            p_dist = hsv_distance_from_hue(hue_avg, PINK) + ((255-sat_avg)/5) + radius
-            g_dist = hsv_distance_from_hue(hue_avg, GREEN) + ((255-sat_avg)/5) + radius
+            p_dist = hsv_distance_from_hue(hue_avg, PINK) + ((255-sat_avg)/2) + radius
+            g_dist = hsv_distance_from_hue(hue_avg, GREEN) + ((255-sat_avg)/20) + radius
             if find_orange and sat_avg > ORANGE_SAT:  # If we have not found an orange ball yet
                 o_dist = hsv_distance_from_hue(hue_avg, ORANGE) + ((255-sat_avg)/5) + (1000 - radius)
             else:
@@ -266,11 +256,12 @@ class Locator:
                     new_circles.remove(circle)
 
         # Determine if a ball is seen outside borders
-        if area_border is not None:
+        """if area_border is not None:
             for circle in new_circles:
                 p = Point(circle)
                 if not p.within(area_border):
                     new_circles.remove(circle)
+        """
 
         if find_orange and best_ball[2] in new_circles:
             if best_ball[2] is not None:
