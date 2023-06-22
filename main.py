@@ -12,7 +12,6 @@ import utils as u
 import os
 import const as c
 
-
 # booleans
 exclamation = False
 
@@ -28,19 +27,17 @@ guideCorners = [(), (), (), ()]
 # variable to keep track of how often we calculate borders and middle cross
 border_i = 0
 
-
 print("Waiting on MiddleMan")
 
 # Getting correct camera source
 source = os.environ.get("SOURCE")
-VIDEO = False
+VIDEO = True
 CAMERASOURCE = c.CAMERASOURCE
 if source is not None:
     if source.lower() == "video":
         VIDEO = True
     else:
         CAMERASOURCE = int(source)
-
 
 # funktion to check if robot is outside of border, returns true if robot is outside.
 def emergency(pPoint, gPoint, area_border):
@@ -58,11 +55,6 @@ if c.CROP:  # check boolean
     # calculate new width
     crop_width_x = c.WIDTH - c.CROP_AMOUNT_X
     c.WIDTH -= c.CROP_AMOUNT_X * 2
-
-    # calculate new height
-    # crop_width_y = c.HEIGHT - c.CROP_AMOUNT_Y
-    # c.HEIGHT -= c.CROP_AMOUNT_Y * 2
-
 
 # Main loop
 while True:
@@ -137,7 +129,6 @@ while True:
                 print("Can't receive frame (stream end?). Exiting ...")
                 exit()
 
-
             if c.CROP:  # Changes frames resolution to cropped resolution
                 # frame = frame[c.CROP_AMOUNT_Y:crop_width_y, c.CROP_AMOUNT_X:crop_width_x]
                 frame = frame[:, c.CROP_AMOUNT_X:crop_width_x]
@@ -189,7 +180,6 @@ while True:
             robot_l_r = [[0, 0], [0, 0]]
 
             # checks if we have found any circles
-
             circles, robot, orange, output = locator.locate(hsv, gray, output, area_border, find_orange)
             if circles is None and robot is None and orange is None:
                 continue
@@ -267,6 +257,7 @@ while True:
                 for point in drawPoints:
                     cv.rectangle(output, (point[0] - 10, point[1] - 10), (point[0] + 10, point[1] + 10), point[2], 1)
 
+            # Denote which order balls are to be picked up.
             if ballOrder is not None and ballOrder is not []:
                 for ball in ballOrder:
                     cv.putText(output, str(ball[0]), ball[1], cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2,

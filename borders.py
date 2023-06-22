@@ -86,26 +86,15 @@ class Borders:
         upper = np.array([180, 255, 255], dtype="uint8")
         mask2 = cv.inRange(hsv, lower, upper)
         mask = mask1 | mask2
-        frame2 = cv.bitwise_and(frame, frame, mask=mask)
-        # red_edges = cv.cvtColor(frame2, cv.COLOR_BGR2GRAY)
-        redEdges = frame2
+        redEdges = cv.bitwise_and(frame, frame, mask=mask)
 
+        # Gray scaling and making a cropped view for the cross
+        gray_edges = cv.cvtColor(redEdges, cv.COLOR_BGR2GRAY)   # Apply gray scale to our image.
+        cropped_edges = gray_edges[new_height:new_height * 5, new_width:new_width * 4]  # Crop the image, to fit to our borders.
+        cropped_cross = cv.GaussianBlur(cropped_edges, (3, 3), 0)    # Apply Gaussian blur to our cropped image.
 
-        gray_edges = cv.cvtColor(redEdges, cv.COLOR_BGR2GRAY)
-        cropped_edges = gray_edges[new_height:new_height * 5, new_width:new_width * 4]
-        cropped_view = cv.GaussianBlur(cropped_edges, (3, 3), 0)
-
-        #dst = cv.cornerHarris(cropped_view, 2, 3, 0.04)
-        #dst = cv.dilate(dst, None)
-        #cv.imshow("gray_edges", cropped_view)
-
-
-
-        # cv.imshow("rededges", redEdges)
-
-
+        # Apply Gaussian blur to our image.
         redEdges = cv.GaussianBlur(redEdges, (5, 5), 0)
-
 
         # Use canny edge detection
         edges = cv.Canny(redEdges, 50, 150, apertureSize=3)
@@ -113,13 +102,9 @@ class Borders:
         #cropped_cross = edges[new_height:new_height * 2, new_width:new_width * 3]
         cropped_cross = cropped_view
 
-        #cv.imshow("redEdges", cropped_cross)
-
-        # Apply HoughLinesP method to
-        # directly obtain line end points
-
-        lines_list_borders = []
-        lines_list_cross = []
+        # Arrays for the lines found for the borders and cross
+        lines_list_borders = []  # Array containing our lines, for our borders.
+        lines_list_cross = []   # Array containing our lines, for our cross.
 
         # Determine offsets
         upper = 0.025 * c.HEIGHT
@@ -129,6 +114,10 @@ class Borders:
         interval = 50
         offset = 20
 
+        # Apply HoughLinesP method to
+        # directly obtain line end points
+
+        # Determine the line-values for the borders.
         lines_for_borders = cv.HoughLinesP(
             edges,  # Input edge image
             1,  # Distance resolution in pixels
@@ -138,6 +127,7 @@ class Borders:
             maxLineGap=20  # Max allowed gap between line for joining them
         )
 
+        # Draw lines for the borders, on the image.
         if lines_for_borders is not None:
             # Iterate over points
             for points in lines_for_borders:
@@ -149,6 +139,8 @@ class Borders:
                 # Maintain a simples lookup list for points
                 lines_list_borders.append([(x1, y1), (x2, y2)])
 
+        # Determine the line-values for the cross, for each case.
+        # First if the cross is 90 degrees, and second if the cross is 45 degrees.
         threshold_arr = [80, 70]
         minLineLength_arr = [90, 70]
         maxLineGap_arr = [40, 50]
@@ -163,6 +155,8 @@ class Borders:
                 minLineLength=minLineLength_arr[i],  # Min allowed length of line
                 maxLineGap=maxLineGap_arr[i]  # Max allowed gap between line for joining them
             )
+
+            # Draw lines for the cross, on the image.
             if lines_for_cross is not None:
                 distances = np.linalg.norm(lines_for_cross[:, 0, :2] - lines_for_cross[:, 0, 2:], axis=1)
                 keep = distances <= 120
@@ -181,6 +175,7 @@ class Borders:
                     # Maintain a simples lookup list for points
                     lines_list_cross.append([(x1, y1), (x2, y2)])
 
+            # Average out point on cross.
             for x in lines_list_cross:
                 for y in lines_list_cross:
                     if y == x:
@@ -195,8 +190,7 @@ class Borders:
 
 
 
-        # check if all elements of self.cross_array are True using all()
-
+        # Check if all elements of self.cross_array are True using all() and that the cross hasn't moved.
         if all(self.cross_array) and (len(self.old_cross_array) < 1 or self.crosses_close_enough()):
             self.old_cross_array = self.cross_array
         else:
@@ -233,6 +227,8 @@ class Borders:
                 y = int(mean[1]) + offset if i in [0, 1] else int(mean[1]) - offset
                 self.corners[i] = (x, y)
 
+        # Check if all elements of self.corners are True using all().
+        # In which case save the old corners.
         if all(self.corners) and self.borders_close_enough():
             self.corners = self.old_corners
         elif all(self.corners):

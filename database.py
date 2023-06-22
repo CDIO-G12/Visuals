@@ -9,6 +9,7 @@ RIGHT = (0, 0)
 UP = (0, 0)
 DOWN = (0, 0)
 
+# Funktion to get the placement of the cross, settings file filled using the calibrator file
 def read_settings_corners():
     global LEFT, RIGHT, UP, DOWN
 

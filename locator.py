@@ -16,6 +16,7 @@ def read_settings():
     global PINK, GREEN, ORANGE, MIN_SAT, MIN_VAL
 
     try:
+        # Load ind the settings.csv file, and apply its values.
         arr = np.loadtxt("settings.csv",
                          delimiter=",", dtype=int)
         sat = 200
@@ -59,48 +60,50 @@ def calculate_robot_position(robot):
     if robot is None:
         return robot
 
+    # Determine distance of pixels.
     pd = getPixelDist(robot)
     if pd == 0:
         print(robot)
     pixel_ratio = robot_dist_cm / pd
 
+    # Defining the middle point of the image.
     x_axis = c.WIDTH / 2
     y_axis = c.HEIGHT / 2
     mid_point = (x_axis, y_axis)
 
     # Calculate robot positions
     for i in range(2):
-        hyp = getPixelDist([mid_point, robot[i]]) * pixel_ratio
-        angle = np.arctan(cam_height / hyp)
-        dx = 0.70 * robot_height / np.tan(angle)
+        hyp = getPixelDist([mid_point, robot[i]]) * pixel_ratio     # Calculate the hypotenuse
+        angle = np.arctan(cam_height / hyp)                         # Find the angle of the camera to the robot.
+        dx = 0.70 * robot_height / np.tan(angle)                 # Calculate the distance from the robot to the camera.
 
         p_help = (x_axis, robot[i][1])
-        katete = getPixelDist([p_help, mid_point]) * pixel_ratio
-        new_angle = np.arcsin(katete/hyp)
-        y_diff = (np.sin(new_angle) * dx)/pixel_ratio
-        x_diff = (np.cos(new_angle) * dx)/pixel_ratio
+        katete = getPixelDist([p_help, mid_point]) * pixel_ratio    # Calculate the catheder.
+        new_angle = np.arcsin(katete/hyp)   # Calculate the angle between the robot and the camera.
+        y_diff = (np.sin(new_angle) * dx)/pixel_ratio   # Calculate the y difference between the robot and the camera.
+        x_diff = (np.cos(new_angle) * dx)/pixel_ratio   # Calculate the x difference between the robot and the camera.
 
-        x_direction = -1 if robot[i][0] > x_axis else 1
-        y_direction = -1 if robot[i][1] > y_axis else 1
-        new_x = int(robot[i][0] + (x_direction * x_diff))
-        new_y = int(robot[i][1] + (y_direction * y_diff))
-        robot[i] = (new_x, new_y)
+        x_direction = -1 if robot[i][0] > x_axis else 1 # Determine the direction of the robot, on the x-axis.
+        y_direction = -1 if robot[i][1] > y_axis else 1 # Determine the direction of the robot, on the y-axis.
+        new_x = int(robot[i][0] + (x_direction * x_diff))   # Calculate the new x position of the robot.
+        new_y = int(robot[i][1] + (y_direction * y_diff))   # Calculate the new y position of the robot.
+        robot[i] = (new_x, new_y)   # Set the new position of the robot.
 
     return robot
 
 
 # Draw the square around the robot. Effectively works as a bounding box for the robot.
 def make_robot_square(robot):
-    mydegrees = getAngle(robot) + 90
-    gx = int(robot[1][0] + (100 * np.cos(mydegrees * np.pi / 180)))
-    gy = int(robot[1][1] + (100 * np.sin(mydegrees * np.pi / 180)))
+    mydegrees = getAngle(robot) + 90 # Get the angle of the robot.
+    gx = int(robot[1][0] + (100 * np.cos(mydegrees * np.pi / 180))) # Calculate the x position of the square.
+    gy = int(robot[1][1] + (100 * np.sin(mydegrees * np.pi / 180))) # Calculate the y position of the square.
 
-    px = int(robot[0][0] + (100 * np.cos(mydegrees * np.pi / 180)))
-    py = int(robot[0][1] + (100 * np.sin(mydegrees * np.pi / 180)))
-    coords = [robot[0], robot[1], (gx, gy), (px, py)]
+    px = int(robot[0][0] + (100 * np.cos(mydegrees * np.pi / 180))) # Calculate the x position in front of the robot.
+    py = int(robot[0][1] + (100 * np.sin(mydegrees * np.pi / 180))) # Calculate the y position in front of the robot.
+    coords = [robot[0], robot[1], (gx, gy), (px, py)]   # Set the coordinates of the square.
     return coords
 
-
+# Average out hue values.
 def calculate_average_hue(hue_values):
     sum_angle = 0
     count = 0
@@ -165,8 +168,6 @@ class Locator:
                 continue
             hue_avg = calculate_average_hue(hues)  # calculate average hue for the circle
 
-            #print((x, y, r), (hue_avg, sat_avg, val_avg), MIN_SAT)
-
             # White ball found
             if val_avg < MIN_VAL and r < tracking_size:
                 continue
@@ -226,17 +227,7 @@ class Locator:
         # Calculate the best candidates for the pink and green ball, and calculate the robot position
         # with respect to perspective distortion.
         if best_ball[0] != (0, 0) and best_ball[1] != (0, 0) and is_close(best_ball[0], best_ball[1], 300):
-            """if self.last_robot is None:  # If we have not seen a robot yet
-                robot = [best_ball[0], best_ball[1]]
-                self.last_robot = robot
-            elif self.robot_pos_stabilizer([best_ball[0], best_ball[1]]):
-                robot = [best_ball[0], best_ball[1]]
-                self.last_robot = robot
-            else:
-                robot = self.last_robot
-            """
             robot = [best_ball[0], best_ball[1]]
-            #self.last_robot = robot
             if c.PERSPECTIVE_OFFSET and robot is not None:
                 robot = calculate_robot_position(robot)
 
@@ -255,14 +246,7 @@ class Locator:
                     # print("Ball inside robot")
                     new_circles.remove(circle)
 
-        # Determine if a ball is seen outside borders
-        """if area_border is not None:
-            for circle in new_circles:
-                p = Point(circle)
-                if not p.within(area_border):
-                    new_circles.remove(circle)
-        """
-
+        # Remove the orange ball from the circles
         if find_orange and best_ball[2] in new_circles:
             if best_ball[2] is not None:
                 self.old_orange = best_ball[2]
@@ -359,10 +343,12 @@ def is_close(point1, point2, thresh=5):
     dist = math.sqrt(x**2 + y**2)
     return dist < thresh
 
-def gen_mask(frame, hue):  # TODO: Make this work.
+#   Function to generate a mask for a given hue.
+def gen_mask(frame, hue):
     lower_hue = hue - 10
     upper_hue = hue + 10
 
+    # Define the lower and upper boundaries of our color values, and create a mask.
     if lower_hue < 0 or upper_hue > 180:
         lower = np.array([0, MIN_SAT, 50], dtype="uint8")
         upper = np.array([10, 255, 255], dtype="uint8")

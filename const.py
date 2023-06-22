@@ -5,18 +5,13 @@ VIDEO = False   # Set env variable 'SOURCE' to 'VIDEO' if camera is not connecte
 
 draw_robot = True  # Set to true if robot should be drawn
 
-VIDEOFILE = 'video/outputCLEAN.avi'  # Define which video file to use
-CAMERASOURCE = 0
+VIDEOFILE = 'video/outputCLEAN3.avi'  # Define which video file to use
+CAMERASOURCE = 0    #   Define which camera to use.
 
-#WIDTH = 800
-#HEIGHT = 600
-
-#WIDTH = 1920
-#HEIGHT = 1080
-
+# Define the resolution of the camera.
 WIDTH = 1280
 HEIGHT = 720
-CONTRAST = None
+CONTRAST = None # Set the contrast of the camera. default = None.
 
 CROP = True  # Crop the output image.
 CROP_AMOUNT_X = 150  #Amount of pixels to crop from each side.
@@ -30,7 +25,8 @@ BORDER = 3 # How often the border will
 
 PERSPECTIVE_OFFSET = True  # Rectify the image for perspective offset.
 
-#HOST = "localhost"  # The server's hostname or IP address
-HOST = "192.168.0.102"  # The server's hostname or IP address
+CROSS_BOOL = True   # Draw cross on the image.
+HOST = "localhost"  # The server's hostname or IP address
+#HOST = "192.168.0.102"  # The server's hostname or IP address
 #HOST = "192.168.0.103"  # The Mark's hostname or IP address
 PORT = 8888  # The port used by the server

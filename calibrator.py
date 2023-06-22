@@ -35,6 +35,7 @@ def avg_hsv(hsv, x, y):
     hue_avg, sat_avg, val_avg = 0, 0, 0
     hues = []
     try:
+        # Average the HSV values of the pixel and its neighbours.
         ky = -1
         for kx in [-1, 0, 1, -1, 0, 1, -1, 0, 1]:
             j = 0
@@ -83,9 +84,6 @@ if __name__ == '__main__':
         crop_width_x = c.WIDTH - c.CROP_AMOUNT_X
         c.WIDTH -= c.CROP_AMOUNT_X * 2
 
-        # calculate new height
-        # crop_width_y = c.HEIGHT - c.CROP_AMOUNT_Y
-        # c.HEIGHT -= c.CROP_AMOUNT_Y * 2
     while True:
         # Capture frame-by-frame
         ret, frame = cap.read()
@@ -103,6 +101,7 @@ if __name__ == '__main__':
 
         hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
+        # Draw big cross in the middle.
         cv.line(frame, (0, 0), (c.WIDTH, c.HEIGHT), (200, 200, 200), 2)
         cv.line(frame, (0, c.HEIGHT), (c.WIDTH, 0), (200, 200, 200), 2)
         cv.circle(frame, (50, 40), 3, (0, 0, 0), 2)
@@ -124,10 +123,6 @@ if __name__ == '__main__':
         if new:
             new = False
             avg = avg_hsv(hsv, mouseX, mouseY)
-            """if avg[1] < 50:
-                print("Please try again..")
-                continue
-            """
 
             data[state] = (avg[0], avg[1], avg[2], mouseX, mouseY)
             if state == 0:
