@@ -172,7 +172,7 @@ class Locator:
                 continue
 
             cv.circle(frame, (x, y), r, (125, 125, 125), 2)
-            print(hue_avg, sat_avg, val_avg, r)
+            #print(hue_avg, sat_avg, val_avg, r)
             new_circles.append((x, y))
 
             # White ball found
