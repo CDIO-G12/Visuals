@@ -13,6 +13,8 @@ class Borders:
 
 # Determine position of the cross in the middle of the field.
     def check_point_in_cross(self, avg):
+        # Checks all points for the cross and places them in the array based on their x and y values
+        # At the end we should have an array with 4 points of the cross, in pairs.
         # min X
         if self.cross_array[0] is None or self.cross_array[0][0] >= avg[0]:
             self.cross_array[0] = avg
@@ -26,65 +28,56 @@ class Borders:
         elif self.cross_array[3] is None or self.cross_array[3][1] <= avg[1]:
             self.cross_array[3] = avg
 
-    """""
+    # Funktion to check if we need to update the location of the borders
     def borders_close_enough(self):
-        if self.old_corners is None:
+        if self.old_corners is None:    # We update if there are no saved corners
             return False
 
-        for (x1, y1) in self.corners:
-            match = False
-            for (x2, y2) in self.old_corners:
-                dist = np.abs(((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5)
-                if 10 >= dist:
-                    match = True
-                    break
-            if not match:
-                return False
-
-        return True
-    """
-
-    def borders_close_enough(self):
-        if self.old_corners is None:
-            return False
-
-        for (x1, y1) in self.corners:
+        for (x1, y1) in self.corners:   # Checks if all corners are within 10 pixels of previous location
             if all(np.abs(((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5) > 10 for (x2, y2) in self.old_corners):
                 return False
 
-        return True
+        return True     # No update needed
 
+    # Funktion to check if we need to update the cross points
     def crosses_close_enough(self):
 
         for i in range(4):
             dist = np.abs(((self.old_cross_array[i][0] - self.cross_array[i][0]) ** 2 + (self.old_cross_array[i][1] - self.cross_array[i][1]) ** 2) ** 0.5)
-            #print(dist)
-            if dist < 5 or dist > 50:
-                #print("problem found")
+            if dist < 5 or dist > 50:   # If we have moved less than 5 or more than 50 then we dont need to update
                 return False
 
         return True
 
     # # calculate the position of the barriers.
     def find_barriers(self, frame, hsv):
+        # setting arrays to None
         self.corners = [None] * 4
         self.cross_array = [None] * 4
+
+        # Making arrays for corners
         corner_LL_arr = []
         corner_LR_arr = []
         corner_UL_arr = []
         corner_UR_arr = []
 
+        # New resolution for the cropped view we will be using
         new_width = int(c.WIDTH/5)
         new_height = int(c.HEIGHT/6)
-        #frame = cv.medianBlur(frame, 11)
-        #Initialize the upper and lower boundaries of the "orange" in the HSV color space
+
+        # Initialize the upper and lower boundaries of the "red" in the HSV color space
+        # Since red has a hue around 0 we need two masks.
+        # First mask
         lower = np.array([0, 170, 170], dtype="uint8")
         upper = np.array([5, 255, 255], dtype="uint8")
         mask1 = cv.inRange(hsv, lower, upper)
 
+        # Second mask
         lower = np.array([175, 170, 170], dtype="uint8")
         upper = np.array([180, 255, 255], dtype="uint8")
         mask2 = cv.inRange(hsv, lower, upper)
+
+        # Combine masks and then with fram
         mask = mask1 | mask2
         redEdges = cv.bitwise_and(frame, frame, mask=mask)
 
@@ -99,14 +92,12 @@ class Borders:
         # Use canny edge detection
         edges = cv.Canny(redEdges, 50, 150, apertureSize=3)
         edges = cv.GaussianBlur(edges, (5, 5), 0)
-        #cropped_cross = edges[new_height:new_height * 2, new_width:new_width * 3]
-        cropped_cross = cropped_view
 
         # Arrays for the lines found for the borders and cross
         lines_list_borders = []  # Array containing our lines, for our borders.
         lines_list_cross = []   # Array containing our lines, for our cross.
 
-        # Determine offsets
+        # Determine offsets to differentiate between the different border corners
         upper = 0.025 * c.HEIGHT
         lower = 1 * c.HEIGHT
         left = 0.025 * c.WIDTH
@@ -180,15 +171,16 @@ class Borders:
                 for y in lines_list_cross:
                     if y == x:
                         continue
+                    # Look at the points in pairs x[0], y[0] and x[1], y[1]
                     points = {0: [x[0], y[0]], 1: [x[1], y[1]]}
                     for key, value in points.items():
+                        # If the difference is low enough it must be an arm of the cross
                         if math.dist(value[0], value[1]) <= offset:
-                            avg = np.mean(value, axis=0)
+                            avg = np.mean(value, axis=0)    # Get the mean
+                            # Insert into array using the functions
                             self.check_point_in_cross((int(avg[0]), int(avg[1])))
-            if not all(self.cross_array):
+            if not all(self.cross_array):  # Checks if the first values for houghlinesP was good enough
                 break
-
-
 
         # Check if all elements of self.cross_array are True using all() and that the cross hasn't moved.
         if all(self.cross_array) and (len(self.old_cross_array) < 1 or self.crosses_close_enough()):
@@ -201,9 +193,11 @@ class Borders:
             for y in lines_list_borders:
                 if y == x:
                     continue
-                intersect = line_intersection(x, y)
-                if intersect == (0, 0):
+                intersect = line_intersection(x, y)  # Do line intersection
+                if intersect == (0, 0):  # If lines don't intersect
                     continue
+
+                # Checks for which corner the intersection is in
                 if right >= intersect[0] >= (right - interval) and lower >= intersect[1] >= (lower - interval):
                     corner_LR_arr.append((int(intersect[0]), int(intersect[1])))
 
@@ -223,6 +217,7 @@ class Borders:
             # print(corner, len(corner_dict[corner]))
             mean = np.mean(corner_dict[corner], axis=0) if corner_dict[corner] else None
             if mean is not None:
+                # Offsets so we hit the actual corner
                 x = int(mean[0]) + offset if i in [0, 3] else int(mean[0]) - offset
                 y = int(mean[1]) + offset if i in [0, 1] else int(mean[1]) - offset
                 self.corners[i] = (x, y)
@@ -244,7 +239,8 @@ class Borders:
         return self.corners, goal, self.cross_array
 
  
-# Function to find the intersection of two lines. # https://stackoverflow.com/questions/20677795/how-do-i-compute-the-intersection-point-of-two-lines
+# Function to find the intersection of two lines.
+# https://stackoverflow.com/questions/20677795/how-do-i-compute-the-intersection-point-of-two-lines
 def line_intersection(line1, line2):
     xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
     ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])

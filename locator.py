@@ -134,7 +134,7 @@ class Locator:
         self.export = None
         read_settings()
 
-    def locate(self, hsv, gray, frame, area_border, find_orange=True, ball_count=10):
+    def locate(self, hsv, gray, frame, area_border, find_orange, ball_count=10):
         # print("MIN_SAT: " + str(MIN_SAT))
         tracking_size = 12
 
@@ -152,6 +152,7 @@ class Locator:
 
             hue_avg, sat_avg, val_avg = 0, 0, 0
             hues = []
+            # calculates the average values for hsv in a 3*3 pixel square
             try:
                 ky = -1
                 for kx in [-1, 0, 1, -1, 0, 1, -1, 0, 1]:
@@ -181,9 +182,8 @@ class Locator:
                 continue
 
             radius = 1000
-            if r > tracking_size:
+            if r > tracking_size:     # If this is true we are looking at one of the robots circles
                 radius = 0
-
 
             # Calculate distance to the different colours, effectively determining which
             # ball is the best match for the different coloured balls
@@ -209,6 +209,7 @@ class Locator:
 
         best_ball = [(0, 0), (0, 0), None]
 
+        # Places the best circles for the robot into the arrays
         for dist in distances:
             ball_type = dist[0]
             if dist[1] < best_val[ball_type]:
@@ -231,12 +232,13 @@ class Locator:
             if c.PERSPECTIVE_OFFSET and robot is not None:
                 robot = calculate_robot_position(robot)
 
+        # Removes the robot circles from the array of all the circles
         if best_ball[0] in new_circles:
             new_circles.remove(best_ball[0])
         if best_ball[1] in new_circles:
             new_circles.remove(best_ball[1])
 
-        # Determine if a ball has been seen inside the robot
+        # Determine if a ball has been seen inside the robot and remove it from the circles
         if robot is not None:
             coords = make_robot_square(robot)
             poly = Polygon(coords)
@@ -255,6 +257,7 @@ class Locator:
             elif self.orange_balancer < 3:
                 orange = self.old_orange
 
+        # Checks if the found circles are different, so that we need to updates
         if self.balls_close_enough(new_circles):
             self.balancer += 1
         else:
@@ -306,6 +309,7 @@ class Locator:
                 return False
         return True
 
+
 # Determine whether two points are close enough to be considered the same.
 def hsv_distance_from_hue(hsv_hue, hue):
     dist = min(abs(hsv_hue - hue), abs(hsv_hue - (hue - 180)))
@@ -327,6 +331,7 @@ def getAngle(point_array):
     myradians = math.atan2(point_array[0][1] - point_array[1][1], point_array[0][0] - point_array[1][0])
     return int(math.degrees(myradians))
 
+
 # Calculate distance between two points in pixels.
 def getPixelDist(robot_pos):
     return math.sqrt(math.pow(robot_pos[0][0] - robot_pos[1][0], 2) + math.pow(robot_pos[0][1] - robot_pos[1][1], 2))
@@ -336,12 +341,14 @@ def getPixelDist(robot_pos):
 def is_robot(frame):
     return frame[0] < 160 and frame[1] > 180 and frame[2] > 230
 
+
 # See if point1 is close to point2
 def is_close(point1, point2, thresh=5):
     x = abs(point1[0] - point2[0])
     y = abs(point1[1] - point2[1])
     dist = math.sqrt(x**2 + y**2)
     return dist < thresh
+
 
 #   Function to generate a mask for a given hue.
 def gen_mask(frame, hue):

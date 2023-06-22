@@ -9,6 +9,7 @@ RIGHT = (0, 0)
 UP = (0, 0)
 DOWN = (0, 0)
 
+
 # Funktion to get the placement of the cross, settings file filled using the calibrator file
 def read_settings_corners():
     global LEFT, RIGHT, UP, DOWN
@@ -50,7 +51,6 @@ class Database:
         self.sendBalls = 8
         self.corners = []
         self.cross = [LEFT, RIGHT, UP, DOWN]
-
 
     # Check position of balls, robot, orange, corners, crosses and goal and send to MM (MiddleMan).
     def check_and_send(self, s, balls, robot, orange, corner_array, cross_array, goal):
@@ -143,7 +143,6 @@ class Database:
         if self.robot_pos is None:
             return
         pos = self.robot_pos
-
 
         if c.draw_robot:
             cv.circle(frame, (self.robot[0][0], self.robot[0][1]), 4, (187, 255, 0), 2)

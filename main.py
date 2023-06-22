@@ -113,6 +113,7 @@ while True:
             out = cv.VideoWriter('recordings/output_' + datetime.datetime.now().strftime("%Y%m%d_%H%M%S") + '.avi',
                                  cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (frame_width, frame_height))
         else:
+            # Otherwise overwrite old files
             out_c = cv.VideoWriter('recordings/outputCLEAN.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (c.WIDTH, c.HEIGHT))
             out = cv.VideoWriter('recordings/output.avi', cv.VideoWriter_fourcc('M', 'J', 'P', 'G'), 10, (c.WIDTH, c.HEIGHT))
 
@@ -124,7 +125,7 @@ while True:
             # if frame is read correctly ret is True
             if not ret:
                 if VIDEO:
-                    cap.set(cv.CAP_PROP_POS_FRAMES, 0)  # this make the video loop, sets frame to 0
+                    cap.set(cv.CAP_PROP_POS_FRAMES, 0)  # this makes the video loop, sets frame to 0
                     continue
                 print("Can't receive frame (stream end?). Exiting ...")
                 exit()
@@ -133,13 +134,12 @@ while True:
                 # frame = frame[c.CROP_AMOUNT_Y:crop_width_y, c.CROP_AMOUNT_X:crop_width_x]
                 frame = frame[:, c.CROP_AMOUNT_X:crop_width_x]
 
-            blurred = cv.GaussianBlur(frame, (5, 5), 0)
+
             # Our operations on the frame come here
+            blurred = cv.GaussianBlur(frame, (5, 5), 0)
             hsv = cv.cvtColor(blurred, cv.COLOR_BGR2HSV)
             gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
             gray = cv.GaussianBlur(gray, (5, 5), 0)
-
-            # cv.imshow("gray", gray)
 
             output = frame.copy()
             out_c.write(output)
@@ -169,7 +169,8 @@ while True:
 
                 if all(corner_array):  # if 4 corners are found we create a polygon to use for checking.
                     area_border = Polygon(corner_array)
-            else:   # else set all to None so that we ignore them
+            else:
+                # else set all to None so that we ignore them
                 corner_array = None
                 cross_array = None
                 goal = None
@@ -184,7 +185,7 @@ while True:
             if circles is None and robot is None and orange is None:
                 continue
 
-            # Check if robot is inside our borders
+            # Check if robot is inside our borders, not used at the moment
             if robot is not None and not [(0, 0), (0, 0)] and False:  # only check if currently have some coordinates
                 robot_outline = l.make_robot_square(robot)  # Calculating outline of robot
 
@@ -201,46 +202,49 @@ while True:
             success = database.check_and_send(s, circles, robot, orange, corner_array, cross_array, goal)
             if not success:
                 break
-            database.highlight(output)
+            database.highlight(output)  # function to draw most things to our frame
 
             # read from middleman
             data = u.check_data(s)
             if data is not None:
                 first = True
-                spl = data.decode().split("\n")
+                spl = data.decode().split("\n")  # Split the data into parts for easier operations
                 for parts in spl:
-                    if parts == "no":
+                    if parts == "no":               # We should recieve this if we have picked up the orange ball
                         print("NO recieved")
-                        find_orange = False
+                        find_orange = False         # Tells visuals to not look for an orange ball
                         continue
 
                     innerSplit = parts.split("/")  # Segments messages into parts, seperated by '/'
 
                     try:
-                        # Check to see if a ball is present or not.
+                        # Check to see if a ball is present or not, before we try to actually pick it up.
                         if innerSplit[0] == "check" and len(innerSplit) > 2:
                             innerSplit = [int(i) for i in innerSplit[1:]]
-                            if u.check_for_ball(hsv[innerSplit[1]][innerSplit[2]]):
+                            # Send true/false if ball ,is/is not, found at given position
+                            if u.check_for_ball(hsv[innerSplit[1]][innerSplit[2]]): # innersplit has the two koordiantes
                                 u.send(s, "f/t/0")
                             else:
                                 u.send(s, "f/f/0")
                             continue
 
-                        # Send ball order to middleman.
+                        # Receive ball order from middleman.
                         if innerSplit[0] == "b" and len(innerSplit) > 2:
                             if first:
                                 ballOrder = []
                                 first = False
                             innerSplit = [int(i) for i in innerSplit[1:]]
+                            # appending to list for printing later
                             ballOrder.append((innerSplit[0], (innerSplit[1], innerSplit[2] + 15)))
                             continue
 
-                        # Send guide corners to middleman.
+                        # Receive guide corners to middleman, these are the waypoints for the robot to avoid the cross.
                         if innerSplit[0] == "gc" and len(innerSplit) > 3:
                             innerSplit = [int(i) for i in innerSplit[1:]]
+                            # appending to fixed size list for printing later
                             guideCorners[innerSplit[0]] = (innerSplit[1], innerSplit[2])
 
-                        # Draw square highlighting of balls.
+                        # Draw square highlighting of balls, shows where we are headed.
                         if len(innerSplit) < 5:
                             continue
                         if first:
@@ -263,13 +267,12 @@ while True:
                     cv.putText(output, str(ball[0]), ball[1], cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2,
                                cv.LINE_AA)
 
+            # Draws lines between guide points
             if len(guideCorners) == 4 and guideCorners[0] != ():
                 cv.line(output, guideCorners[0], guideCorners[2], (200, 200, 200), 1)
                 cv.line(output, guideCorners[2], guideCorners[1], (200, 200, 200), 1)
                 cv.line(output, guideCorners[1], guideCorners[3], (200, 200, 200), 1)
                 cv.line(output, guideCorners[3], guideCorners[0], (200, 200, 200), 1)
-
-
 
             # Write the frame into the file 'output.avi'
             out.write(output)
@@ -288,14 +291,14 @@ while True:
             if k == ord('q'):
                 exit(0)
             elif k == ord(' '):
-                # SPACE pressed
+                # SPACE pressed we save the current frame to a picture
                 img_name = "opencv_frame_{}.png".format(1)
                 cv.imwrite(img_name, picFrame)
                 print("{} written!".format(img_name))
 
         s.close()
         print("Lost connection.")
-
+        # Close what we've opened
         cv.destroyAllWindows()
         out.release()
         out_c.release()
